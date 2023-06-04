@@ -246,6 +246,7 @@ named ~sqlite~ under ~emacsql-sqlite~ installation folder. It's typically in
 your Emacs configuration folder like this:
 ~/.config/emacs/elpa/emacsql-sqlite-20190727.1710/sqlite~
 
+
 * Getting Started
 ** The Org-roam Node
 
@@ -903,35 +904,27 @@ Org-roam 提供 ~${foo}~ 语法来替换已知字符串的变量。 ~${foo}~ 的
 
 * Extensions
 ** org-roam-protocol
-
-Org-roam provides extensions for capturing content from external applications
-such as the browser, via ~org-protocol~. Org-roam extends ~org-protocol~ with 2
-protocols: the ~roam-node~ and ~roam-ref~ protocols.
+Org-roam 提供了从外部应用程序捕获内容的扩展,例如通过 ~org-protocol~ 从浏览器中。 Org-roam 通过2个协议扩展了 ~org-protocol~: ~roam-node~ 协议和 ~roam-ref~ 协议。
 
 *** Installation
 
-To enable Org-roam's protocol extensions, simply add the following to your init
-file:
+为启用 Org-roam 的协议扩展,只需将以下内容添加到您的初始化文件中:
 
 #+BEGIN_SRC emacs-lisp
 (require 'org-roam-protocol)
 #+END_SRC
 
-We also need to set up ~org-protocol~: the instructions for setting up
-~org-protocol~ are reproduced here.
+我们还需要设置 ~org-protocol~:在这里重现设置 ~org-protocol~ 的说明。
 
-On a high-level, external calls are passed to Emacs via ~emacsclient~.
-~org-protocol~ intercepts these and runs custom actions based on the protocols
-registered. Hence, to use ~org-protocol~, once must:
+在高级别上,外部调用通过 ~emacsclient~ 传递给 Emacs。 ~org-protocol~ 根据注册的协议拦截这些调用并运行自定义操作。因此,要使用 ~org-protocol~,必须:
 
-1. launch the ~emacsclient~ process
-2. Register ~org-protocol://~ as a valid scheme-handler
+1. 启动 ~emacsclient~ 进程
+2. 将 ~org-protocol://~ 注册为有效的 =scheme-handler= 方案处理程序
 
-The instructions for the latter for each operating system is detailed below.
+各操作系统的后者的说明如下详述。
 
 **** Linux
-For Linux users, create a desktop application in
-~~/.local/share/applications/org-protocol.desktop~:
+对于 Linux 用户,在 ~/.local/share/applications/org-protocol.desktop~ 中创建一个桌面应用程序:
 
 #+begin_example
 [Desktop Entry]
@@ -943,20 +936,17 @@ Terminal=false
 MimeType=x-scheme-handler/org-protocol
 #+end_example
 
-Associate ~org-protocol://~ links with the desktop application by
-running in your shell:
+通过在 shell 中运行以下内容将 ~org-protocol://~ 链接与桌面应用程序关联:
 
 #+BEGIN_SRC bash
 xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
 #+END_SRC
 
-To disable the "confirm" prompt in Chrome, you can also make Chrome show a
-checkbox to tick, so that the ~Org-Protocol Client~ app will be used without
-confirmation. To do this, run in a shell:
+要禁用 Chrome 中的"确认"提示,您还可以让 Chrome 显示一个复选框进行勾选,以便无需确认即可使用 ~Org-Protocol Client~ 应用程序。要做到这一点,请在 shell 中运行:
 
 #+BEGIN_SRC bash
 sudo mkdir -p /etc/opt/chrome/policies/managed/
-sudo tee /etc/opt/chrome/policies/managed/external_protocol_dialog.json >/dev/null <<'EOF'
+sudo tee /etc/opt/chrome/policies/managed/external_protocol_dialog.json &gt;/dev/null &amp;lt;'EOF'
 {
   "ExternalProtocolDialogShowAlwaysOpenCheckbox": true
 }
@@ -964,17 +954,15 @@ EOF
 sudo chmod 644 /etc/opt/chrome/policies/managed/external_protocol_dialog.json
 #+END_SRC
 
-and then restart Chrome (for example, by navigating to <chrome://restart>) to
-make the new policy take effect.
+然后重新启动 Chrome(例如,通过导航到 <chrome://restart>)使新策略生效。
 
-See [[https://www.chromium.org/administrators/linux-quick-start][here]] for more info on the ~/etc/opt/chrome/policies/managed~ directory and
-[[https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ExternalProtocolDialogShowAlwaysOpenCheckbox][here]] for information on the ~ExternalProtocolDialogShowAlwaysOpenCheckbox~ policy.
+有关 ~/etc/opt/chrome/policies/managed~ 目录的更多信息,请参见[[<https://www.chromium.org/administrators/linux-quick-start>][这里]],有关 ~ExternalProtocolDialogShowAlwaysOpenCheckbox~ 策略的信息,请参见[[&lt;<https://cloud>le.com/docs/chrome-enterprise/policies/?policy=ExternalProtocolDialogShowAlwaysOpenCheckbox>][这里]]。
 
 **** Mac OS
-For Mac OS, we need to create our own application.
+对于 Mac OS,我们需要创建自己的应用程序。
 
-1. Launch Script Editor
-2. Use the following script, paying attention to the path to ~emacsclient~:
+1. 启动 Script Editor
+2. 使用以下脚本,注意 ~emacsclient~ 的路径:
 
 #+begin_src emacs-lisp
   on open location this_URL
@@ -985,12 +973,9 @@ For Mac OS, we need to create our own application.
   end open location
 #+end_src
 
-3. Save the script in ~/Applications/OrgProtocolClient.app~, changing the script type to
-   "Application", rather than "Script".
-4. Edit ~/Applications/OrgProtocolClient.app/Contents/Info.plist~, adding the
-   following before the last ~</dict>~ tag:
-
-#+begin_src text
+3. 将脚本保存到 ~/Applications/OrgProtocolClient.app~,将脚本类型更改为 "Application" ,而不是 "Script" 。
+4. 编辑 ~/Applications/OrgProtocolClient.app/Contents/Info.plist~,在最后一个 ~</dict>~ 标签之前添加以下内容:
+    #+begin_src text
   <key>CFBundleURLTypes</key>
   <array>
     <dict>
@@ -1004,52 +989,46 @@ For Mac OS, we need to create our own application.
   </array>
 #+end_src
 
-5. Save the file, and run the ~OrgProtocolClient.app~ to register the protocol.
+5. 保存文件,并运行 ~OrgProtocolClient.app~ 以注册协议。
 
-To disable the "confirm" prompt in Chrome, you can also make Chrome
-show a checkbox to tick, so that the ~OrgProtocol~ app will be used
-without confirmation. To do this, run in a shell:
+要禁用 Chrome 中的"确认"提示,您还可以让 Chrome 显示一个复选框进行勾选,以便无需确认即可使用 ~OrgProtocol~ 应用程序。要做到这一点,请在 shell 中运行:
 
 #+BEGIN_SRC bash
 defaults write com.google.Chrome ExternalProtocolDialogShowAlwaysOpenCheckbox -bool true
 #+END_SRC
 
-If you're using [[https://github.com/railwaycat/homebrew-emacsmacport][Emacs Mac Port]], it registered its `Emacs.app` as the default
-handler for the URL scheme `org-protocol`. To make ~OrgProtocol.app~
-the default handler instead, run:
-
+如果您使用[[https://github>railwaycat/homebrew-emacsmacport][Emacs Mac Port]],它会将其 ~Emacs.app~ 注册为URL scheme ~org-protocol~ 的默认处理程序。设置 ~OrgProtocol.app~ 为默认处理程序:
 #+BEGIN_SRC bash
 defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add \
 '{"LSHandlerPreferredVersions" = { "LSHandlerRoleAll" = "-"; }; LSHandlerRoleAll = "org.yourusername.OrgProtocol"; LSHandlerURLScheme = "org-protocol";}'
 #+END_SRC
 
-Then restart your computer.
+然后重新启动计算机。
 
-***** Testing org-protocol
+***** 测试 org-protocol
 
-To test that you have the handler setup and registered properly from the command
-line you can run:
+要从命令行测试是否正确设置和注册了处理程序,可以运行:
 
 #+begin_src bash
   open org-protocol://roam-ref\?template=r\&ref=test\&title=this
 #+end_src
 
-If you get an error similar too this or the wrong handler is run:
+如果遇到类似于此的错误或运行了错误的处理程序:
 
 #+begin_quote
 No application knows how to open URL org-protocol://roam-ref?template=r&ref=test&title=this (Error Domain=NSOSStatusErrorDomain Code=-10814 "kLSApplicationNotFoundErr: E.g. no application claims the file" UserInfo={_LSLine=1489, _LSFunction=runEvaluator}).
 
-#+end_quote
-
-You may need to manually register your handler, like this:
+您可能需要手动注册您的处理程序,如下:
 
 #+begin_src bash
 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R  -f /Applications/OrgProtocolClient.app
 #+end_src
 
-Here is a link to the lsregister command that is really useful: https://eclecticlight.co/2019/03/25/lsregister-a-valuable-undocumented-command-for-launchservices/
+这里是 ~lsregister~ 命令的链接,非常有用:
+https://eclecticlight.co/2019/03/25/lsregister-a-valuable-undocumented-command-for-launchservices/
+
 **** Windows
-For Windows, create a temporary ~org-protocol.reg~ file:
+对于Windows,创建一个临时的 ~org-protocol.reg~ 文件:
 
 #+BEGIN_SRC text
 REGEDIT4
@@ -1063,139 +1042,120 @@ REGEDIT4
 @="\"C:\\Windows\\System32\\wsl.exe\" emacsclient \"%1\""
 #+END_SRC
 
-The above will forward the protocol to WSL. If you run Emacs natively on
-Windows, replace the last line with:
+上述内容将协议转发到WSL。如果您在 Windows 上原生运行 Emacs,请将最后一行替换为:
 
 #+BEGIN_SRC text
 @="\"c:\\path\\to\\emacs\\bin\\emacsclientw.exe\"  \"%1\""
 #+END_SRC
 
-After executing the .reg file, the protocol is registered and you can delete the
-file.
+执行 .reg 文件后,该协议将被注册,您可以删除该文件。
+*** roam-node 协议
 
-*** The roam-node protocol
+roam-node 协议打开具有 ~node~ 键(例如 ~org-protocol://roam-node?node=node-id~)指定的ID的节点。 ~org-roam-graph~ 使用此协议使图形可导航。
 
-The roam-node protocol opens the node with ID specified by the ~node~ key (e.g.
-~org-protocol://roam-node?node=node-id~). ~org-roam-graph~ uses this to make the
-graph navigable.
+*** roam-ref 协议
 
-*** The roam-ref protocol
-
-This protocol finds or creates a new note with a given ~ROAM_REFS~:
+此协议根据给定的 ~ROAM_REFS~ 查找或创建新注释:
 
 [[file:images/roam-ref.gif]]
 
-To use this, create the following [[https://en.wikipedia.org/wiki/Bookmarklet][bookmarklet]] in your browser:
+要使用此功能,请在浏览器中创建以下[[https://en.wikipedia.org/wiki/Bookmarklet][书签]]:
 
 #+BEGIN_SRC javascript
   javascript:location.href =
-      'org-protocol://roam-ref?template=r&ref='
+      '<org-protocol://roam-ref?template=r&amp;ref=>'
       + encodeURIComponent(location.href)
-      + '&title='
+      + '&amp;title='
       + encodeURIComponent(document.title)
-      + '&body='
+      + '&amp;body='
       + encodeURIComponent(window.getSelection())
 #+END_SRC
 
-or as a keybinding in ~qutebrowser~ in , using the ~config.py~ file (see
-[[https://github.com/qutebrowser/qutebrowser/blob/master/doc/help/configuring.asciidoc][Configuring qutebrowser]]):
+或在 ~qutebrowser~ 中使用 ~config.py~ 文件作为键绑定(请参阅[[https://github.com/qutebrowser/rowser/blob/master/doc/help/configuring.asciidoc][配置qutebrowser]]):
 
 #+BEGIN_SRC python
   config.bind("<Ctrl-r>", "open javascript:location.href='org-protocol://roam-ref?template=r&ref='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)")
 #+END_SRC
 
-where ~template~ is the template key for a template in
-~org-roam-capture-ref-templates~ (see [[*The Templating System][The Templating System]]).
+其中 ~template~ 是 ~org-roam-capture-ref-templates~ 中模板的模板键(请参阅[[*模版系统*][模版系统]])。
 
 ** org-roam-graph
 
-Org-roam provides basic graphing capabilities to explore interconnections
-between notes, in ~org-roam-graph~. This is done by performing SQL queries and
-generating images using [[https://graphviz.org/][Graphviz]]. The graph can also be navigated: see [[*org-roam-protocol][org-roam-protocol]].
+Org-roam 提供基本的图表功能来探索注释之间的互连,在 ~org-roam-graph~ 中。这是通过执行SQL查询和使用[[<https://graphviz.org/>][Graphviz]]生成图像来完成的。该图也可以导航:请参阅[[*org-roam-protocol*][org-roam-protocol]]。
 
-The entry point to graph creation is ~org-roam-graph~.
+图形创建的入口点是 ~org-roam-graph~ 。
 
-- Function: org-roam-graph & optional arg node
+- 函数: ~org-roam-graph & optional arg node~ 为NODE构建并显示图。
 
-Build and display a graph for NODE.
-ARG may be any of the following values:
+  ARG可以是以下任何值:
 
-  - ~nil~       show the full graph.
-  - ~integer~   an integer argument ~N~ will show the graph for the connected
-                components to node up to ~N~ steps away.
+  - ~nil~   显示完整图。
+  - ~整数~   一个整数参数 ~N~ 将显示与节点连接的组件的图,直到 ~N~ 步之外。
 
-- User Option: org-roam-graph-executable
+- 用户选项: ~org-roam-graph-executable~
 
-  Path to the graphing executable (in this case, Graphviz). Set this if Org-roam
-  is unable to find the Graphviz executable on your system.
+  到图形化可执行文件的路径(在这种情况下,Graphviz)。如果 Org-roam 无法在您的系统上找到 Graphviz 可执行文件,请设置此选项。
 
-  You may also choose to use ~neato~ in place of ~dot~, which generates a more
-  compact graph layout.
+  您也可以选择使用 ~neato~ 代替 ~dot~ ,它生成更紧凑的图布局。
 
-- User Option: org-roam-graph-viewer
+- 用户选项: ~org-roam-graph-viewer~
 
-  Org-roam defaults to using Firefox (located on PATH) to view the SVG, but you
-  may choose to set it to:
+  Org-roam 默认使用 Firefox (位于PATH上)来查看SVG,但您可以选择将其设置为:
 
-  1. A string, which is a path to the program used
-  2. a function accepting a single argument: the graph file path.
+  1. ~A~ 字符串,它是用于程序的路径。
+  2. ~a~ 接受单个参数的函数:图文件路径。
 
-  ~nil~ uses ~view-file~ to view the graph.
+  ~nil~ 使用 ~view-file~ 查看图形。
 
-  If you are using WSL2 and would like to open the graph in Windows, you can use
-  the second option to set the browser and network file path:
+  如果您使用 WSL2 并希望在 Windows 中打开图形,可以使用第二个选项设置浏览器和网络文件路径:
 
-  #+BEGIN_SRC emacs-lisp
-  (setq org-roam-graph-viewer
+#+BEGIN_SRC emacs-lisp
+(setq org-roam-graph-viewer
       (lambda (file)
         (let ((org-roam-graph-viewer "/mnt/c/Program Files/Mozilla Firefox/firefox.exe"))
           (org-roam-graph--open (concat "file://///wsl$/Ubuntu" file)))))
-  #+END_SRC
+#+END_SRC
 
-*** Graph Options
+*** 图选项
 
-Graphviz provides many options for customizing the graph output, and Org-roam
-supports some of them. See https://graphviz.gitlab.io/_pages/doc/info/attrs.html
-for customizable options.
+Graphviz 提供许多选项来自定义图形输出,Org-roam 支持其中一些选项。有关可自定义选项,请参阅https://graphviz.gitlab.io/_pages/doc/info/attrs.html。
 
-- User Option: org-roam-graph-filetype
+- 用户选项: ~org-roam-graph-filetype~
 
-  The file type to generate for graphs. This defaults to ~"svg"~.
+  生成图形的文件类型。默认为 ~"svg"~ 。
 
-- User Option: org-roam-graph-extra-config
+- 用户选项: ~org-roam-graph-extra-config~
 
-  Extra options passed to graphviz for the digraph (The "G" attributes).
-  Example: ~'~(("rankdir" . "LR"))~
+  传递给 graphviz 用于 digraph 的额外选项(“G”属性)。
 
-- User Option: org-roam-graph-node-extra-config
+  例如:~'~(("rankdir" . "LR"))~
 
-  An alist of options to style the nodes.
-  The car of the alist node type such as ~"id"~, or ~"http"~. The cdr of the
-  list is another alist of Graphviz node options (the "N" attributes).
+- 用户选项: ~org-roam-graph-node-extra-config~
 
-- User Option: org-roam-graph-edge-extra-config
+  节点样式选项的 alist。
+  alist 的 car 是节点类型,如 ~"id"~ 或 ~"http"~ 。列表的 cdr 是 Graphviz 节点选项的另一个 alist (“N”属性)。
 
-  Extra options for edges in the graphviz output (The "E" attributes).
-  Example: ~'(("dir" . "back"))~
+- 用户选项: ~org-roam-graph-edge-extra-config~
 
+  图形输出中边缘的额外选项(“E”属性)。
+  例如:~'~(("dir" . "back"))~
 ** org-roam-dailies
 
-Org-roam provides journaling capabilities akin to
-Org-journal with ~org-roam-dailies~.
+Org-roam 通过 ~org-roam-dailies~ 提供类似 Org-journal 的记账功能。
 
-*** Configuration
+*** 配置
 
-For ~org-roam-dailies~ to work, you need to define two variables:
+要使用 ~org-roam-dailies~,您需要定义两个变量:
 
-- Variable: ~org-roam-dailies-directory~
+- 变量: ~org-roam-dailies-directory~
 
-  Path to daily-notes. This path is relative to ~org-roam-directory~.
+  日志的路径。此路径相对于 ~org-roam-directory~ 。
 
-- Variable: ~org-roam-dailies-capture-templates~
+- 变量: ~org-roam-dailies-capture-templates~
 
-  Capture templates for daily-notes in Org-roam.
+  Org-roam 中的日常注释的捕获模板。
 
-Here is a sane default configuration:
+这是一个理智的默认配置:
 
 #+begin_src emacs-lisp
 (setq org-roam-dailies-directory "daily/")
@@ -1207,70 +1167,63 @@ Here is a sane default configuration:
                             "#+title: %<%Y-%m-%d>\n"))))
 #+end_src
 
-See [[*The Templating System][The Templating System]] for creating new templates.
+有关创建新模板的信息,请参阅[[*模板系统*][模板系统]]。
 
-*** Usage
+*** 使用
 
-~org-roam-dailies~ provides these interactive functions:
+~org-roam-dailies~ 提供这些交互式函数:
 
-- Function: ~org-roam-dailies-capture-today~ &optional goto
+- 函数: ~org-roam-dailies-capture-today~ &optional goto
 
-  Create an entry in the daily note for today.
+  创建今天的日志。
 
-  When ~goto~ is non-nil, go to the note without creating an entry.
+  当 ~goto~ 为非 nil 时,转到笔记而不创建条目。
 
-- Function: ~org-roam-dailies-goto-today~
+- 函数: ~org-roam-dailies-goto-today~
 
-  Find the daily note for today, creating it if necessary.
+  找到今天的日志,如果需要的话创建它。
 
-There are variants of those commands for ~-yesterday~ and ~-tomorrow~:
+这些命令有 ~yesterday~ 和 ~tomorrow~ 的变体:
 
-- Function: ~org-roam-dailies-capture-yesterday~ n &optional goto
+- 函数: ~org-roam-dailies-capture-yesterday~ n &optional goto
 
-  Create an entry in the daily note for yesterday.
+  在昨天的日志中创建条目。
 
-  With numeric argument ~n~, use the daily note ~n~ days in the past.
+  使用数字参数 ~n~,使用 ~n~ 天前的日志。
 
-- Function: ~org-roam-dailies-goto-yesterday~
+- 函数: ~org-roam-dailies-goto-yesterday~
 
-  With numeric argument N, use the daily-note N days in the future.
+  使用数字参数N,使用未来N天的日志。
 
-There are also commands which allow you to use Emacs’s ~calendar~ to find the date
+也有允许使用 Emacs 的 ~calendar~ 找到日期的命令
 
-- Function: ~org-roam-dailies-capture-date~
+- 函数: ~org-roam-dailies-capture-date~
 
-  Create an entry in the daily note for a date using the calendar.
+  使用日历在日志中为某个日期创建条目。
 
-  Prefer past dates, unless ~prefer-future~ is non-nil.
+  优先选择过去的日期,除非 ~prefer-future~ 为非 nil。
 
-  With a 'C-u' prefix or when ~goto~ is non-nil, go the note without
-  creating an entry.
+  使用'C-u' 前缀或当 ~goto~ 为非 nil 时,转到日志而不创建条目。
 
-- Function: ~org-roam-dailies-goto-date~
+- 函数: ~org-roam-dailies-goto-date~
 
-  Find the daily note for a date using the calendar, creating it if necessary.
+  使用日历查找日志的日期,如果需要的话创建它。
 
-  Prefer past dates, unless ~prefer-future~ is non-nil.
+  优先选择过去的日期,除非 ~prefer-future~ 为非 nil。
 
-- Function: ~org-roam-dailies-find-directory~
+- 函数: ~org-roam-dailies-find-directory~
 
-  Find and open ~org-roam-dailies-directory~.
+  查找和打开 ~org-roam-dailies-directory~ 。
 
-- Function: ~org-roam-dailies-goto-previous-note~
+- 函数: ~org-roam-dailies-goto-previous-note~
 
-  When in an daily-note, find the previous one.
+  在日志中,查找前一个日志。
 
-- Function: ~org-roam-dailies-goto-next-note~
+- 函数: ~org-roam-dailies-goto-next-note~
 
-  When in an daily-note, find the next one.
+  在日志中,查找下一个日志。
 ** org-roam-export
-
-Because Org-roam files are plain org files, they can be exported easily using
-~org-export~ to a variety of formats, including ~html~ and ~pdf~. However,
-Org-roam relies heavily on ID links, which Org's html export has poor support
-of. To fix this, Org-roam provides a bunch of overrides to better support
-export. To use them, simply run:
-
+因为 Org-roam 文件是普通的 org 文件,所以可以使用 ~org-export~ easily 将其导出到各种格式,包括 ~html~ 和 ~pdf~ 。然而,Org-roam 严重依赖ID链接,而 Org 的 html 导出对此支持不佳。为了修复此问题,Org-roam 提供了许多覆盖以更好地支持导出。要使用它们,只需运行:
 #+begin_src emacs-lisp
   (require 'org-roam-export)
 #+end_src
@@ -1293,7 +1246,7 @@ Org-roam 提供选项 ~org-roam-db-gc-threshold~ 来临时更改GC触发的阈�
 
 掌握调优技巧,让您的知识管理系统高效、流畅。不仅可以节省宝贵的时间,也能提供更好的用户体验。
 
-* Org-mode生态系统
+* Org-mode 生态系统
 
 因为 Org-roam 建立在 Org-mode 之上,它受益于已经有的大量软件包。
 
