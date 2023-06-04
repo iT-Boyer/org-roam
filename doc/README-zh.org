@@ -1,0 +1,1735 @@
+#+title: Org-roam User Manual
+#+author: Jethro Kuan
+#+email: jethrokuan95@gmail.com
+#+date: 2020-2022
+#+language: en
+
+#+texinfo_deffn: t
+#+texinfo_dir_category: Emacs
+#+texinfo_dir_title: Org-roam: (org-roam).
+#+texinfo_dir_desc: Roam Research for Emacs.
+#+subtitle: for version 2.2.2
+
+#+options: H:4 num:3 toc:nil creator:t ':t
+#+property: header-args :eval never
+#+texinfo: @noindent
+
+This manual is for Org-roam version 2.2.2.
+
+#+BEGIN_QUOTE
+Copyright (C) 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+
+You can redistribute this document and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version.
+
+This document is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+#+END_QUOTE
+
+* Introduction
+
+Org-roam是一个用于联想思维的工具。它在[[<https://orgmode.org/>][Org mode]]中模拟[[<https://roamresearch.com/>][Roam Research]] 的一些关键功能。
+
+Org-roam 允许轻松地进行非层次化的记笔记:使用 Org-roam,笔记会自然流畅地记录,这使得记笔记变得有趣和容易。Org-roam 增强了 Org mode 语法,任何已经使用 Org mode 进行个人知识库的人都可以使用它。
+
+Org-roam 利用 Org mode 周围成熟的生态系统。例如,它对[[<https://github.com/jkitchin/org-ref>][org-ref]]提供首要支持以进行引文管理,并能够利用Org的优秀LaTeX和源码块评估功能。
+
+相比其他工具,Org-roam 提供以下优势:
+
+~隐私和安全性:~ 你的个人知识库只属于你,完全离线和由你控制。使用 GPG 加密你的笔记。 
+
+~纯文本的长期性:~ 与 Roam Research 等 web 解决方案不同,笔记首先是纯 Org mode 文件—— Org-roam 仅构建一个辅助数据库,以赋予
+个人知识库超能力。拥有纯文本笔记对知识库的长期性至关重要。无需担心专有 Web 解决方案被取消。即使 Org-roam 不复存在,笔记仍然有效。
+
+~免费和开源:~ Org-roam 既免费又开源,这意味着如果你对 Org-roam 的任何部分感到不满意,你可以选择扩展 Org-roam 或打开 pull 请求。
+
+~利用Org mode生态系统:~ 几十年来,Emacs 和 Org mode 已发展成为组织纯文本的成熟系统。在 Org mode 的基础上构建 Org-roam 已将其远远领先于许多其他解决方案。
+
+~基于Emacs:~ Emacs 也是编辑文本的绝佳界面,Org-roam 继承了 Emacs 可提供的强大文本导航和编辑功能。
+
+* 目标受众
+
+ Org-roam 对不熟悉 Emacs 和 Org mode 的任何人来说看起来都不友好,但对愿意投入精力掌握其复杂性的人来说,它也是极其强大的。
+ Org-roam 站在巨人的肩膀上。Emacs 最初于1976年创建,至今仍然是许多人编辑文本和设计文本界面时的首选工具。Emacs 的可塑性允
+ 许创建 Org mode,这是一种通用的纯文本系统,用于维护待办事项列表、规划项目和撰写文档。这两种工具都非常广泛,需要花费大量时间才能充分掌握。
+
+Org-roam 假定仅对这些工具有基本熟悉度。使用基本文本编辑功能轻松上手并不困难,但只有在使用这些工具变得更加高级时,人们才能
+充分意识到将 Roam 功能构建到 Emacs 和 Org mode 中的强大功能。
+
+Org-roam 的一个关键优点是基于 Emacs,这使得它具有可塑性。这对于记笔记工作流程尤其重要。我们认为记笔记工作流程极其个人化,
+没有一种工具能完美适合您。Org mode 和 Org-roam 允许您发现什么适合您,并为自己构建那个完美的工具。
+
+如果您是新手软件,选择相信这一飞跃,我希望您能像 Neal Stephenson 一样深深着迷。
+
+#+BEGIN_QUOTE
+与其他编辑软件相比,Emacs 的优点就像正午的阳光比星星更大更亮一样,它不仅更大更亮,简直令其他所有东西消失无踪。——尼尔·斯蒂芬森,《一开始就是命令行》(1998年)
+#+END_QUOTE
+
+* 简单介绍 zettelkasten 法
+ Org-roam 提供维护 slip-box 数字滑盒的实用程序。本节旨在简要介绍“slip-box”或“Zettelkasten”方法。通过提供有关该方法的背景
+ 知识,我们希望 Org-roam 的设计决定变得清晰,这将有助于适当使用 Org-roam。在本节中,我们将介绍 Zettelkasten 社区和 Org-roam
+ 论坛中常用的术语。
+
+Zettelkasten 是一种个人思考和写作工具。它非常重视观点之间的联系,建立起思维网络。因此,它非常适合知识工作者和智力任务,如进
+行研究。Zettelkasten 可以充当研究伙伴,与之交谈可能会产生新的和意想不到的思路。
+
+这种方法归功于德国社会学家尼克拉斯•卢曼,他使用这种方法产生了大量的著作。卢曼的滑盒简单地是一盒卡片。这些卡片很小——通常只够容纳一个概念。大小限制鼓励将想法分解成单独的概念。这些想法是显式链接在一起的。想法的分解鼓励对想法的离题探索,增加了思考的表面。在笔记之间明确建立链接也鼓励一个人考虑概念之间的联系。
+
+在每张卡片的角落,卢曼给每张卡片附加了一个有序ID,允许他链接和跳转到卡片之间。在 Org-roam 中,我们简单地使用超链接。
+
+Org-roam 是数字化在 Org mode 中的滑盒。每个 zettel(卡片)都是纯文本 Org mode 文件。与维护纸质滑盒一样,Org-roam 使创建新
+zettel 变得易于使用强大的模板系统预填写样板内容。
+
+~暂时笔记~
+
+滑盒需要一种快速捕获想法的方法。这些被称为 ~暂时笔记~ :它们是稍后需要处理或删除的信息或想法的简单提醒。这通常使用
+~org-capture~ (见 info:org#Capture)或使用 Org-roam 的每日笔记功能(见[[*org-roam-dailies*][org-roam-dailies]]来实现。这提供了一个收集思想的中心收件箱,以供日后处理成永久笔记。
+
+~永久笔记~
+永久笔记进一步分为两类:文献笔记和概念笔记。文献笔记可以是对某一特定来源(例如书籍、网站或论文)的简要注释,以便日后访问。概
+念笔记在撰写时需要更多照顾:它们需要自解释和详细。Org-roam 的模板系统支持添加不同模板以促进这些笔记的创建。
+
+有关 Zettelkasten 方法的更多阅读,Sonke Ahrens 的《如何做到聪明记笔记》是一本不错的指南。
+* Installation
+
+Org-roam can be installed using Emacs' package manager or manually from its
+development repository.
+
+** Installing from MELPA
+
+Org-roam is available from Melpa and Melpa-Stable. If you haven't used Emacs'
+package manager before, you may familiarize yourself with it by reading the
+documentation in the Emacs manual, see info:emacs#Packages. Then, add one of the
+archives to =package-archives=:
+
+- To use Melpa:
+
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (add-to-list 'package-archives
+               '("melpa" . "http://melpa.org/packages/") t)
+#+END_SRC
+
+- To use Melpa-Stable:
+
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (add-to-list 'package-archives
+               '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+#+END_SRC
+
+Org-roam also depends on a recent version of Org, which can be obtained in Org's
+package repository (see info:org#Installation).
+
+Once you have done that, you can install Org-roam and its dependencies
+using:
+
+#+BEGIN_EXAMPLE
+  M-x package-install RET org-roam RET
+#+END_EXAMPLE
+
+** Installing from Source
+
+You may install Org-roam directly from the repository on [[https://github.com/org-roam/org-roam][GitHub]] if you like.
+This will give you access to the latest version hours or days before it appears
+on MELPA, and months (or more) before it is added to the Debian or Ubuntu
+repositories. This will also give you access to various developmental branches
+that may be available.
+
+Note, however, that development version, and especially any feature branches,
+may not always be in working order. You'll need to be prepared to do some
+debugging, or to manually roll-back to working versions, if you install from
+GitHub.
+
+Installing from GitHub requires that you clone the repository:
+
+#+begin_src bash
+git clone https://github.com/org-roam/org-roam.git /path/to/org/roam
+#+end_src
+
+where ~./path/to/org/roam~ is the location you will store your copy of the code.
+
+Next, you need to add this location to your load path, and ~require~ the
+Org-roam library. Add the following code to your ~.emacs~:
+
+#+begin_src elisp
+(add-to-list 'load-path "/path/to/org/roam")
+(require 'org-roam)
+#+end_src
+
+You now have Org-roam installed. However, you don't necessarily have the
+dependencies that it requires. These include:
+
+- dash
+- f
+- s
+- org
+- emacsql
+- emacsql-sqlite
+- magit-section
+
+You can install this manually as well, or get the latest version from MELPA. You
+may wish to use [[https://github.com/jwiegley/use-package][use-package]], [[https://github.com/raxod502/straight.el][straight.el]] to help manage this.
+
+If you would like to install the manual for access from Emacs' built-in Info
+system, you'll need to compile the .texi source file, and install it in an
+appropriate location.
+
+To compile the .texi source file, from a terminal navigate to the ~/doc~
+subdirectory of the Org-roam repository, and run the following:
+
+#+begin_src bash
+make infodir=/path/to/my/info/files install-info
+#+end_src
+
+Where ~/path/to/my/info/files~ is the location where you keep info files. This
+target directory needs to be stored in the variable
+`Info-default-directory-list`. If you aren't using one of the default info
+locations, you can configure this with the following in your ~.emacs~ file:
+
+#+begin_src elisp
+  (require 'info)
+  (add-to-list 'Info-default-directory-list
+               "/path/to/my/info/files")
+#+end_src
+
+You can also use one of the default locations, such as:
+
+- /usr/local/share/info/
+- /usr/share/info/
+- /usr/local/share/info/
+
+If you do this, you'll need to make sure you have write-access to that location,
+or run the above ~make~ command as root.
+
+Now that the info file is ready, you need to add it to the corresponding ~dir~
+file:
+
+#+begin_src bash
+install-info /path/to/my/info/files/org-roam.info /path/to/my/info/files/dir
+#+end_src
+
+** Installation Troubleshooting
+*** C Compiler
+Org-roam relies on an Emacs package called ~emacsql~ and ~emacsql-sqlite~ to
+work with the ~sqlite~ database. Both of them should be installed automatically
+in your Emacs environment as a prerequisite for Org-roam when you install it.
+
+~emacsql-sqlite~ requires a C compiler (e.g. ~gcc~ or ~clang~) to be present in
+your computer. How to install a C compiler depends on the OS that you use.
+
+**** C Compiler for Windows
+
+One of the easiest ways to install a C compiler in Windows is to use [[https://www.msys2.org/][MSYS2]] as at the time of this writing:
+
+1. Download and use the installer in the official MSYS2 website
+2. Run MSYS2 and in its terminal, type the following and answer "Y" to
+   proceed -- this will install ~gcc~ in your PC:
+
+   #+BEGIN_SRC bash
+     pacman -S gcc
+   #+END_SRC
+
+4. On Windows, add ~C:\msys64\usr\bin~ (command =where gcc= in MSYS2 terminal
+   can tell you the correct path) to ~PATH~ in your environmental variables
+
+5. Launch Emacs and call ~M-x org-roam-db-autosync-mode~ (launch Emacs after
+   defining the path, so that Emacs can recognize it)
+
+This will automatically start compiling ~emacsql-sqlite~; you should see a
+message in minibuffer. It may take a while until compilation completes. Once
+complete, you should see a new file ~emacsql-sqlite.exe~ created in a subfolder
+named ~sqlite~ under ~emacsql-sqlite~ installation folder. It's typically in
+your Emacs configuration folder like this:
+~/.config/emacs/elpa/emacsql-sqlite-20190727.1710/sqlite~
+
+* Getting Started
+** The Org-roam Node
+
+We first begin with some terminology we'll use throughout the manual. We term
+the basic denomination in Org-roam a node. We define a node as follows:
+
+#+begin_quote
+A node is any headline or top level file with an ID.
+#+end_quote
+
+For example, with this example file content:
+
+#+begin_src org
+  :PROPERTIES:
+  :ID:       foo
+  :END:
+  ,#+title: Foo
+
+  ,* Bar
+  :PROPERTIES:
+  :ID:       bar
+  :END:
+#+end_src
+
+在使用手册时,我们首先介绍一些术语。我们将Org-roam中的基本单位称为节点。我们将节点定义如下:
+
+#+begin_quote
+一个节点是任何具有ID的标题或顶级文件。
+#+end_quote
+
+例如,使用此示例文件内容:
+
+#+begin_src org
+  :PROPERTIES:
+  :ID:       foo
+  :END:
+  ,#+title: Foo
+
+  ,* Bar
+  :PROPERTIES:
+  :ID:       bar
+  :END:
+#+end_src
+
+我们创建两个节点:
+
+1. 一个文件节点“Foo”,ID为 ~foo~。
+
+2. 一个标题节点“Bar”,ID为 ~bar~。
+
+没有 ID 的标题将不被视为 Org-roam 节点。可以通过交互命令 ~M-x org-id-get-create~ 向文件或标题添加 Org ID。
+
+接着,我们将文件内容分解为节点层次结构,称为 Org-roam 网络。每个节点都链接到其父节点和子节点。例如,上述示例的网络结构为:
+
+```
+- Foo
+  - Bar
+```
+
+其中:
+
+- ~Foo~ 是文件节点,ID为 ~foo~,链接到子节点 ~Bar~ 。
+- ~Bar~ 是标题节点,ID为 ~bar~,链接到父节点 ~Foo~ 。
+
+网络的根节点为文件节点。文件节点可以链接到其他文件节点,构建更大的网络。网络提供一种视觉表示,用于在头脑中构建和探索思想之间的关联。
+
+接下来,我们将更详细地探讨节点类型和网络。我们还将看到 Org-roam 如何帮助构建和维护此网络。
+
+** Links between Nodes
+
+我们使用 Org 的标准ID链接(例如~id:foo~)在节点之间建立链接。在计算节点之间的链接时,只考虑ID链接,但 Org-roam 会缓存文档中的所有其他链接以供外部使用。
+
+例如,给定文件:
+
+#+begin_src org
+  :PROPERTIES:
+  :ID:       foo
+  :END:
+  ,* [[http://example.com][Example]]
+  ,* Bar
+  :PROPERTIES:
+  :ID:       bar
+  :END:
+#+end_src
+
+其网络为:
+
+```
+- Foo
+  - Bar
+```
+
+其中, Org-roam 忽略链接 ~[[http://example.com][Example]]~ , 但会在 Org-roam 缓存中记录该链接,以供外部使用。只有ID链接 ~id:bar~ 会用于计算网络结构。
+
+通过只使用ID链接来构建网络,Org-roam 可以跟踪节点之间的父子关系,并构建层次结构。如果考虑所有的链接,网络可能变得杂乱和难以理解。但是,通过缓存其他链接,Org-roam 仍然允许复杂的跨文档链接,这些链接可供外部工具和进程使用。
+
+此外,Org-roam 网络是有向无环图(DAG)。这意味着:
+
+1. 网络中的每个节点至多有一个父节点。这避免了在网络中形成"环"。
+
+2. 网络可以由多个根节点组成。文件节点始终是网络中的根节点。
+
+3. 网络中的路径可以是单向的,也可以是双向的。双向路径通过在两个节点之间建立双向链接来实现。
+
+理解 Org-roam 网络的这些属性对于在 Org-roam 中有效导航和组织信息至关重要。
+
+** Setting up Org-roam
+
+ Org-roam 的功能源于其积极的缓存:它爬取 ~org-roam-directory~ 中的所有文件,并维护所有链接和节点的缓存。
+
+要开始使用 Org-roam,请选择一个位置存储 Org-roam 文件。包含您笔记的目录由变量 ~org-roam-directory~ 指定。Org-roam 在
+~org-roam-directory~ 中递归搜索笔记。在调用 Org-roam 函数之前,需要设置此变量。
+
+对于本教程,创建一个空目录,并设置 ~org-roam-directory~:
+
+#+BEGIN_SRC emacs-lisp
+(make-directory "~/org-roam")
+(setq org-roam-directory (file-truename "~/org-roam"))
+#+END_SRC
+
+~file-truename~ 函数仅在 ~org-roam-directory~ 内使用符号链接时必要:Org-roam 不解析符号链接。但是,可以指示 Emacs 始终解析符号链接,代价是性能损失:
+
+#+begin_src emacs-lisp
+(setq find-file-visit-truename t)
+#+end_src
+
+接下来,我们设置 Org-roam 以在文件更改时运行函数以维持缓存一致性。这通过运行 ~M-x org-roam-db-autosync-mode~ 来实现。要确
+保 Org-Roam 在启动时可用,请将此内容放入 Emacs 配置中:
+
+#+begin_src emacs-lisp
+(org-roam-db-autosync-mode)
+#+end_src
+
+要手动构建缓存,请运行 ~M-x org-roam-db-sync~ 。第一次构建缓存可能需要一段时间,但后续构建通常是瞬间的,因为它们只重新处理已修改的文件。
+
+org-roam-directory 是您存储 Org-roam 文件的位置。设置 org-roam-directory 是使用 Org-roam 的第一步。
+
+org-roam 通过运行 org-roam-db-autosync-mode 来保持缓存与文件系统同步。这会在保存 Org-roam 文件时同步缓存。
+
+org-roam-db-sync 手动构建缓存。首次构建缓存需要较长时间,但后续构建通常很快,因为它们只需要重新处理已修改的文件。
+
+理解 Org-roam 的缓存机制对于高效使用 Org-roam 至关重要。缓存为许多 Org-roam 功能提供支持,如果缓存过期,这些功能的性能和正
+确性可能会受到影响。
+
+
+** 创建和链接节点
+:PROPERTIES:
+:ID:       3c4e6c68-b4e2-4496-bb76-27be897be0e7
+:END:
+
+Org-roam 使创建笔记并将其链接在一起变得容易。有2个主要函数用于创建节点:
+
+- ~org-roam-node-insert~:如果不存在则创建一个节点,并在点处插入到节点的链接。
+- ~org-roam-node-find~:如果不存在则创建一个节点,并访问该节点。
+- ~org-roam-capture~:如果不存在则创建一个节点,并在完成后恢复当前窗口配置。
+
+首先尝试 ~org-roam-node-find~ 。调用 ~M-x org-roam-node-find~ 将显示 ~org-roam-directory~ 中节点的标题列表。目前应该什么
+也不显示,因为目录中没有笔记。输入要创建的笔记的标题,然后按 ~RET~ 。这将启动笔记创建过程。此过程使用 ~org-capture~ 的模板
+系统,可以定制(见[[*The Templating System*][模板系统]])。使用默认模板,按 ~C-c C-c~ 完成笔记捕获。
+
+现在我们有一个节点,可以使用 ~M-x org-roam-node-insert~ 插入到节点的链接。这会带出节点列表,其中应包含您刚刚创建的节点。选
+择节点将插入到节点的 ~id:~ 链接。如果您输入的标题不存在,您将再次通过节点创建过程。
+
+也可以方便地通过 Org-roam 提供的 ~completion-at-point~ 功能插入链接(见[[*Completion*][完成]])。
+
+~org-roam-node-insert~ 和 ~org-roam-node-find~ 是创建新节点的主要方法。这些命令将引导您通过节点创建过程,要么插入到现有节点的链接,要么创建新节点。理解这些命令使您能够快速而方便地构建网络。
+
+使用 ~completion-at-point~ 功能,可以轻松地通过键入节点标题或标签来插入链接,这不需要显示节点列表。这使链接到现有节点变得非常高效。
+
+创建新节点和手动将它们链接在一起是构建 Org-roam 网络的基础。熟悉这些功能将使您在使用 Org-roam 中变得更加自如。
+
+** 自定义节点自动补齐
+
+节点选择是通过 ~completing-read~ 接口实现的,通常通过 ~org-roam-node-read~ 。这些节点的呈现由
+~org-roam-node-display-template~ 管理。
+
+- 变量: ~org-roam-node-display-template~ 配置 Org-roam 节点的显示格式。
+
+  ~${field-name:length}~ 形式的模式根据当前节点进行插值。
+
+  每个 ~field-name~ 都由 org-roam-node 的每个对应访问器函数的返回值替换,例如 ~${title}~ 将由
+  ~org-roam-node-title~ 的结果插值。您也可以使用 cl-defmethod 定义自定义访问器。例如,您可以定义:
+
+  #+BEGIN_SRC elisp -n 1 :hl_lines 0-0,0-0
+(cl-defmethod org-roam-node-my-title ((node org-roam-node))
+      (concat "My " (org-roam-node-title node)))
+  #+END_SRC
+
+  然后在这里或在捕获模板中将其引用为 ~${my-title}~ 。
+
+  ~length~ 是可选的指定符,声明可以使用多少个字符来显示对应字段的值。如果未指定,该字段将原样插入,即它不会对齐或修剪。如果
+  它是一个整数,则该字段将相应地对齐,所有超出的字符将被修剪。如果它是 “*”,则该字段将尽可能使用许多字符,并将相应地对齐。
+
+  这个变量也可以分配一个闭包,在这种情况下,闭包被求值,其返回值被用作模板。闭包必须求值为有效的模板字符串。
+
+如果您使用垂直完成框架,例如 Ivy 和 Selectrum ,Org-roam 支持生成对齐的表格式完成界面。例如,要包括最多10个字符宽的标签列,
+可以将 ~org-roam-node-display-template~ 设置如下:
+
+#+begin_src emacs-lisp
+(setq org-roam-node-display-template
+      (concat "${title:*} "
+              (propertize "${tags:10}" 'face 'org-tag)))
+#+end_src
+
+这将产生类似于:
+#+begin_example
+My Title         todo
+Another Note    blog
+#+end_example
+
+的完成接口,其中 Title 被对齐,标签被修剪到10个字符。
+
+理解 ~org-roam-node-display-template~ 对于定制 Org-roam 节点选择界面至关重要。通过调整此变量,您可以生成对您的工作流最有意义的界面。
+
+
+* 自定义节点缓存
+** How to cache
+
+Org-roam 使用 sqlite 数据库进行缓存,但有多种 Emacs 库可用于此目的。Org-Roam 默认使用的是 ~emacs-sqlite~ 。
+下面是每个软件包的优缺点:
+
+[[<https://github.com/skeeto/emacsql>][**emacs-sqlite**]]
+
+Org-Roam 默认使用的选项。此库是最成熟和支持最好的库,默认在 Org-Roam 中导入。
+
+使用 ~emacs-sqlite~ 的一个缺点是使用它需要编译,在某些环境下可能会导致问题(特别是 Windows)。如果您在生成 ~emacs-sqlite~
+所需的定制二进制文件方面遇到问题,请考虑使用 ~emacs-sqlite3~ 。
+
+[[<https://github.com/cireu/emacsql-sqlite3>][**emacs-sqlite3**]]
+
+~emacs-sqlite3~ 使用从系统的软件包管理器获得的官方 sqlite3 二进制文件。如果您在生成其他软件包所需的 ~sqlite3~ 二进制文件
+方面遇到问题,这很有用。但是,不推荐使用它,因为它与 Emacs 有一些兼容性问题,但对大多数常规情况应该起作用。有关更多信息,请参
+见 [[https://nullprogram.com/blog/2014/02/][Chris Wellon的博客文章]] 。
+
+要使用 ~emacsql-sqlite3~ ,请确保已安装该软件包,并设置:
+
+#+begin_src emacs-lisp
+  (setq org-roam-database-connector 'sqlite3)
+#+end_src
+
+[[<https://melpa.org/#/emacsql-sqlite-module>][**emacssql-sqlite-module**]] (以前的 emacsql-libsqlite3)
+
+~emacs-sqlite-module~ 是一个相对较新的软件包,它使用暴露 SQLite C API 的 Emacs 模块的部分内容给 Emacs Lisp,而不是像
+~emacsql-sqlite~ 那样使用子进程。预计它将是一个更高性能的 ~emacs-sqlite~ drop-in 替代品。
+
+#+begin_src emacs-lisp
+  (setq org-roam-database-connector 'sqlite-module)
+#+end_src
+
+[[<https://melpa.org/#/emacsql-sqlite-builtin>][**emacsql-sqlite-builtin**]]
+
+~emacsql-sqlite-builtin~ 使用 Emacs 29及更高版本的内置 SQLite 支持。如果您使用支持它的 Emacs 版本,这是推荐的选项。
+
+#+begin_src emacs-lisp
+ (setq org-roam-database-connector 'sqlite-builtin)
+#+end_src
+
+理解 Org-roam 支持的不同数据库选项及其优缺点,对于在不同环境下高效和可靠地使用 Org-roam 很重要。根据您的 Emacs 和OS设置选择正确的数据库选项可以节省大量调试时间。
+
+** What to cache
+
+默认情况下,Org-roam 会缓存所有节点(任何有ID的标题或文件)。有时您可能希望有ID的标题,但不希望被 Org-roam 缓存。
+
+要从 Org-roam 数据库中排除标题,请将 ~ROAM_EXCLUDE~ 属性设置为非 nil 值。例如:
+
+#+begin_src org
+ ,* Foo
+   :PROPERTIES:
+   :ID:       foo
+   :ROAM_EXCLUDE: t
+   :END:
+#+end_src
+
+也可以设置 ~org-roam-db-node-include-function~ 。例如,要从 Org-roam 数据库中排除所有带有 ~ATTACH~ 标签的标题,可以设置:
+
+#+begin_src org
+(setq org-roam-db-node-include-function
+      (lambda ()
+        (not (member "ATTACH" (org-get-tags)))))
+#+end_src
+
+Org-roam 依赖于缓冲区获得的 Org AST来解析链接。但是,某些地方出现的链接(例如,在属性抽屉中)不被 Org AST视为链接。因
+此,Org-roam 特别注意额外尝试处理这些链接。使用 ~org-roam-db-extra-links-elements~ 指定要考虑的其他 Org AST元素类型。
+
+- 变量: ~org-roam-db-extra-links-elements~ Org-roam 要解析的其他 Org 元素类型的列表。
+
+  默认情况下,在解析 Org 的 AST 时,属性抽屉和关键字中的链接不被解析为链接。但是,有时解析和缓存这些链接是可取的(例如,在属性抽屉中隐藏链接)。
+
+此外,可能希望在属性抽屉中忽略某些关键字被排除。例如,我们不想要 ~ROAM_REFS~ 链接是自我引用的。因此,要排除特定的关键字,我
+们使用 ~org-roam-db-extra-links-exclude-keys~ 。
+
+- 变量: ~org-roam-db-extra-links-exclude-keys~ 映射链接时要忽略的键。
+
+  关联列表的车是 Org 元素类型(例如 keyword)。副驾驶是不被视为链接的不区分大小写的字符串列表。
+理解如何高度自定义 Org-roam 缓存节点和链接的行为,对于灵活和高效地使用 Org-roam 非常重要。通过一些简单的自定义设置,Org-roam
+可以完全匹配您的工作流程。
+
+** When to cache
+
+默认情况下,Org-roam 在缓存方面很积极:每当修改并保存 Org-roam 文件时,它都会更新与该文件对应的数据库。这使数据库保持最新,在使用交互命令时引起最少的意外。
+
+但是,根据 Org 文件大小的不同,数据库更新可能是一个缓慢的操作。您可以通过将 ~org-roam-db-update-on-save~ 设置为 ~nil~ 来禁用数据库的自动更新。
+
+- 变量: ~org-roam-db-update-on-save~ 如果为 t,在保存文件时更新 Org-roam 数据库。如果文件很大且更新数据库速度缓慢,请禁用此功能。
+
+手动更新数据库非常简单。只需运行:
+
+#+begin_src emacs-lisp
+(org-roam-db-sync-all)
+#+end_src
+
+这将更新与所有已知 Org-roam 文件的数据库条目。
+
+也可以选择仅更新特定文件:
+
+#+begin_src emacs-lisp
+(org-roam-db-sync-file "/path/to/file.org")
+#+end_src
+
+了解如何根据需要手动或自动触发 Org-roam 数据库更新,将大大增加您使用 Org-roam 的效率和灵活性。
+
+* The Org-roam Buffer
+
+Org-roam 提供了 Org-roam 缓冲区:一个界面来查看与其他笔记的关系(反向链接、参考链接、未链接的引用等)。这里有两个主要的命令:
+
+- ~org-roam-buffer-toggle~: 启动一个追踪当前光标位置节点的 Org-roam 缓冲区。这意味着如果必要,缓冲区的内容会随着光标的移动而改变。
+- ~org-roam-buffer-display-dedicated~:启动一个特定节点的 Org-roam 缓冲区,而无需访问其文件。与 ~org-roam-buffer-toggle~ 不同,您可以有多个此类缓冲区,其内容不会自动替换为新光标位置节点。
+
+要弹出一个跟踪当前光标位置节点的缓冲区,调用 ~M-x org-roam-buffer-toggle~ 。
+
+- 函数: ~org-roam-buffer-toggle~
+
+  切换 ~org-roam-buffer~ 的显示。
+
+要弹出一个专用于特定节点的缓冲区,调用 ~M-x org-roam-buffer-display-dedicated~ 。
+
+- 函数: ~org-roam-buffer-display-dedicated~
+
+  启动节点专用的 Org-roam 缓冲区,而不访问节点本身。
+
+Org-roam 缓冲区提供了一个强大的界面来探索您的网络和发现新的连接。理解如何使用 Org-roam 缓冲区跟踪当前节点或显示专用于特
+定节点的缓冲区,对于最大限度地利用 Org-roam 至关重要。
+
+** 浏览 Org-roam 缓冲区
+
+Org-roam 缓冲区使用 ~magit-section~,使典型的 ~magit-section~ 键绑定可用。这里有几个比较有用的:
+
+- ~M-{N}~: ~magit-section-show-level-{N}-all~
+- ~n~: ~magit-section-forward~
+- ~&lt;TAB&gt;~: ~magit-section-toggle~
+- ~&lt;RET&gt;~: ~org-roam-buffer-visit-thing~
+
+~org-roam-buffer-visit-thing~ 是一个占位符命令,由特定部分的命令替换,比如 ~org-roam-node-visit~ 。
+
+** 配置缓冲区中显示的内容
+
+目前提供了3种小部件类型:
+
+- Backlinks 反向链接 :: 查看(预览)指向此节点的节点
+- Reference Links 参考链接 :: 引用此节点的节点(见[[*Refs][Refs]])
+- Unlinked references 未链接的引用 :: 查看包含与节点标题/别名匹配但未链接的文本的节点
+
+要配置缓冲区中显示的部分,请设置 ~org-roam-mode-sections~ 。
+
+#+begin_src emacs-lisp
+(setq org-roam-mode-sections
+      (list #'org-roam-backlinks-section
+            #'org-roam-reflinks-section
+            ;; #'org-roam-unlinked-references-section
+           ))
+#+end_src
+
+请注意,计算未链接的引用可能很慢,默认情况下未加入。
+
+对于每个部分函数,您可以传递参数来修改其行为。例如,如果您想为反向链接显示唯一的源(并继续显示参考链接),请将
+~org-roam-mode-sections~ 设置如下:
+
+#+begin_src emacs-lisp
+(setq org-roam-mode-sections
+      '((org-roam-backlinks-section :unique t)
+        org-roam-reflinks-section))
+#+end_src
+
+反向链接部分 ~org-roam-backlinks-section~ 还支持过滤反向链接的谓词, ~:show-backlink-p~ 。它可以如下使用:
+
+#+begin_src emacs-lisp
+(defun my-org-roam-show-backlink-p (backlink)
+  (not (member "daily" (org-roam-node-tags (org-roam-backlink-source-node backlink)))))
+
+(setq org-roam-mode-sections
+      '((org-roam-backlinks-section :unique t :show-backlink-p my/org-roam-show-backlink-p)
+        org-roam-reflinks-section))
+#+end_src
+
+** 配置 Org-roam 缓冲区显示
+
+Org-roam 不控制弹出缓冲区如何显示:这留给用户。作者推荐的配置如下:
+
+#+begin_src emacs-lisp
+(add-to-list 'display-buffer-alist
+             '("\\*org-roam\\*"
+               (display-buffer-in-direction)
+               (direction . right)
+               (window-width . 0.33)
+               (window-height . fit-window-to-buffer)))
+#+end_src
+
+最重要的是,窗口是一个常规窗口(不是侧窗口),这允许可预测的导航:
+
+- ~RET~ 导航到当前窗口中的 ~thing-at-point~ ,替换 Org-roam 缓冲区。
+- ~C-u RET~ 在其他窗口中导航到 ~thing-at-point~ 。
+
+对于更喜欢使用侧面窗口的 org-roam 缓冲区的用户,以下示例配置应提供一个很好的起点:
+
+#+begin_src emacs-lisp
+  (add-to-list 'display-buffer-alist
+               '("\\*org-roam\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 0)
+                 (window-width . 0.33)
+                 (window-parameters . ((no-other-window . t)
+                                       (no-delete-other-windows . t)))))
+#+end_src
+
+
+* 节点属性
+** 标准 Org 属性
+
+Org-roam 缓存大多数标准 Org 属性。完整列表现在包括:
+
+- outline 轮廓级别
+- todo   代办事项状态
+- proority 优先级
+- scheduled 计划
+- deadline 截止日期
+- tags 标签
+
+** 标题和别名
+
+每个节点只有一个标题。对于文件节点,这由文件 ~#+title~ 属性指定。对于标题节点,这是主要文本。
+
+节点也可以有多个别名。别名允许通过替代名称搜索节点。例如,可能想为标题为“人工智能”的节点分配一个广为人知的缩写(AI)。
+
+要为节点分配别名,请在节点中添加 ~ROAM_ALIASES~ 属性:
+
+#+begin_src org
+,* 人工智能
+:PROPERTIES:
+:ROAM_ALIASES: AI
+:END:
+#+end_src
+
+另外,Org-roam 提供了一些函数来添加或删除别名。
+
+- 函数: ~org-roam-alias-add~ 别名
+
+  添加别名到当前节点。交互调用时,提示输入要添加的别名。
+
+- 函数: ~org-roam-alias-remove~
+
+  从当前节点删除别名。
+
+** 标签
+
+顶级(文件)节点的标签取自变量 ~org-file-tags~ ,该变量由 ~#+filetags~ 关键字以及文件可能继承的其他标签设置。标题级节点的标
+签是常规的 Org 标签。
+
+请注意, ~#+filetags~ 关键字会导致文件内部的标题继承标签。这使得选择性标签继承变得不可能:即要么关闭标签继承,要么所有标题
+节点都会继承文件节点的标签。这是 Org-roam 的设计妥协。
+
+** 引用
+
+引用是节点的唯一标识符。这些键允许对键的引用出现在 Org-roam 缓冲区中。例如,网站节点可以使用 URL 作为 ref,论文节点可以使
+用 Org-ref 引用键。
+
+要添加 ref,请按如下方式添加到 ~ROAM_REFS~ 属性:
+
+#+begin_src org
+,* Google
+:PROPERTIES:
+:ROAM_REFS: https://www.google.com/
+:END:
+#+end_src
+
+对上例,如果另一个节点链接到 https://www.google.com/ ,它将显示为 =Reference backlink= 参考反向链接。
+
+这些键在记笔记时也很有用,使用 ~roam-ref~ 协议(参见[[*org-roam-protocol][org-roam-protocol]])。
+
+您可以为单个节点分配多个 ref,例如,当您想让系列中的多篇论文共享同一个笔记时,或文章同时具有引用键和URL时。
+
+Org-roam 还提供了一些函数来添加或删除 ref。
+
+- 函数: ~org-roam-ref-add~ ref
+
+  添加REF到当前节点。交互调用时,提示输入要添加的 ref。
+
+- 函数: ~org-roam-ref-remove~
+
+  从当前节点删除 ref。
+理解如何在 Org-roam 中使用标准 Org 属性、标题、别名、标签和 ref,对于构建强大且功能丰富的知识库至关重要。通过灵活运用这些工具,您可以构建复杂的知识网络,并以许多不同的方式访问和整合信息。
+
+* 引文
+
+自9.5版以来,Org对引文的支持得到了第一次正式支持。Org-roam支持缓存内置引文(形式为 ~[cite:@key]~ )和[[<https://github.com/jkitchin/org-ref>][org-ref]]引文(形式为cite:key)的缓存。
+
+Org-roam 在索引文件时会尝试同时加载 ~org-ref~ 和 ~org-cite~ 包,所以用户无需进一步设置即可支持引文。
+
+** 使用缓存的信息
+
+为学术论文撰写参考笔记是很常见的。要指定节点为学术论文的规范节点,我们可以使用其唯一的引文键:
+
+#+begin_src org
+,* 概率机器人学
+:PROPERTIES:
+:ID:       51b7b82c-bbb4-4822-875a-ed548cffda10
+:ROAM_REFS: @thrun2005probabilistic
+:END:
+#+end_src
+
+或者
+
+#+begin_src org
+,* 概率机器人学
+:PROPERTIES:
+:ID:       51b7b82c-bbb4-4822-875a-ed548cffda10
+:ROAM_REFS: [cite:@thrun2005probabilistic]
+:END:
+#+end_src
+
+对于 ~org-cite~ ,或者:
+
+#+begin_src org
+,* 概率机器人学
+:PROPERTIES:
+:ID:       51b7b82c-bbb4-4822-875a-ed548cffda10
+:ROAM_REFS: cite:thrun2005probabilistic
+:END:
+#+end_src
+
+对于 ~org-ref~ 。
+
+当另一个节点对该键有引文时,我们可以通过 Org-roam 缓冲区的 ~Reflinks~ 部分查看它。
+
+扩展开发人员可能对检索笔记中的引文感兴趣。此信息可以在 Org-roam 数据库的 ~citation~ 表中找到。
+
+理解 Org-roam 如何支持 Org 和 org-ref 中的引文,以及如何使用缓存的引文信息,对于构建功能强大的参考资料管理系统至关重要。无论您是学者、作者还是严肃的自学者,掌握这些知识都能大大提高您的工作效率。
+
+* 补全
+
+Org-roam通过 ~completion-at-point~ 提供补全。Org-roam 目前在两种场景提供补全:
+
+- 在 Org 括号内链接中
+- 任何地方
+
+补全在所有 Org-roam 文件中本地安装。要触发补全,调用 ~M-x completion-at-point~ 。如果使用 ~company-mode~,将
+~company-capf~ 添加到 ~company-backends~ 。
+
+补全遵循 ~completion-styles~:用户可以自由选择如何匹配候选者。近期流行的补全风格示例是[[<https://github.com/oantolin/orderless>][orderless]]。
+
+** 在链接括号内完成
+
+链接括号内的补全由 ~org-roam-complete-link-at-point~ 提供。
+
+补全候选者是所有 Org-roam 节点的标题和别名。选择一个候选者后,将插入一个 ~roam:Title~ 链接,链接到所选节点。
+
+** 在任何地方完成
+
+如果不在括号链接内,同样的补全可以在任何地方为点符号触发。这由 ~org-roam-complete-everywhere~ 提供。同样,补全候选者是所有
+Org-roam 节点的标题和别名,选择一个候选者后,将插入一个 ~roam:Title~ 链接,链接到所选节点。
+
+默认情况下禁用此功能。要启用它,将 ~org-roam-completion-everywhere~ 设置为 ~t~:
+
+#+begin_src emacs-lisp
+(setq org-roam-completion-everywhere t)
+#+end_src
+
+- 变量: ~org-roam-completion-everywhere~
+
+如果非 nil,则在 Org 链接外提供链接补全。
+
+
+* 加密
+
+Emacs 有支持创建和编辑加密的 gpg 文件,Org-roam 不需要提供额外的工具。要创建加密文件,只需在 Org-roam 捕获模板中添加
+~.gpg~ 扩展名。例如:
+
+#+begin_src emacs-lisp
+(setq org-roam-capture-templates '(("d" "default" plain "%?"
+     :target (file+head "${slug}.org.gpg"
+                        "#+title: ${title}\n")
+     :unnarrowed t)))
+#+end_src
+
+注意,Org-roam 数据库以明文形式存储元数据信息(例如标题文本),所以如果此信息对您是私有的,则您还应确保数据库也是加密的。
+
+理解如何在 Org-Roam 中创建和使用加密文件至关重要,可以确保您的知识管理系统安全可靠。尤其是如果您存储敏感数据或个人信息,加密是绝对必要的。
+
+开始探索 Org-Roam 的加密功能,构建一个安全稳定的知识管理环境。保护您的思想和见解,同时也分享给需要的人。
+
+* 模板系统
+
+Org-roam 扩展了 ~org-capture~ 系统,提供了更顺畅的记笔记体验。但是,这些扩展意味着 Org-roam 捕获模板与 ~org-capture~ 模板不兼容。
+
+Org-roam 的模板由 ~org-roam-capture-templates~ 指定。就像 ~org-capture-templates~ 一样, ~org-roam-capture-templates~ 可
+以包含多个模板。如果 ~org-roam-capture-templates~ 只包含一个模板,则不会提示选择模板。
+
+** 模板演练
+
+为了演示对 org-capture 模板的添加,这里我们解释默认模板,如下所示。您将发现模板的大多数元素与 ~org-capture~ 模板相似。
+
+#+BEGIN_SRC emacs-lisp
+(("d" "default" plain "%?"
+  :target (file+head "%&lt;%Y%m%d%H%M%S&gt;-${slug}.org"
+                     "#+title: ${title}\n")
+  :unnarrowed t))
+#+END_SRC
+
+1. 模板有短键 ~"d"~ 。如果您只有一个模板,org-roam 会自动为您选择此模板。
+2. 模板被给定 ~"default"~ 描述。
+3. 插入 ~plain~ 文本。其他选项包括通过 ~entry~ 插入 Org 标题。
+4. 注意,通常在 Org-capture 模板中的 ~target~ 这里缺失。
+5. ~"%?"~ 是在每次调用 ~org-roam-capture-~ 时插入的模板。
+     这个模板意味着不插入任何内容,但将光标放在这里。
+6. ~:target~ 在 Org-roam 捕获模板中是必需的规范。列表的第一个元素表示目标的类型,第二个元素表示捕获节点的位置,其余元素表示将插入的预填充模板,光标的位置将根据捕获目标的类型进行调整。后一种行为与捕获目标的类型不同。
+7. ~:unnarrowed t~ 告诉 org-capture 显示整个文件的内容,而不是仅显示条目的内容。这是 Org-capture 模板的一部分。
+
+有关更多详细信息和自定义选项,请参阅 ~org-roam-capture-templates~ 文档。
+
+** Org-roam 模板扩展
+
+Org-roam 的模板定义也扩展了 org-capture 的模板语法,以允许预填充字符串。我们在模板演练[[*Template Walkthrough][Template Walkthrough]]中已经瞥见这一点。
+
+Org-roam 提供 ~${foo}~ 语法来替换已知字符串的变量。 ~${foo}~ 的替换过程如下:
+
+1. 如果 ~foo~ 是函数,则以当前节点作为参数调用 ~foo~ 。
+2. 如果 ~org-roam-node-foo~ 是函数,则以当前节点作为参数调用 ~foo~ 。 ~org-roam-node-~ 前缀定义了许多 Org-roam 的节点访问
+   器,如 ~org-roam-node-title~ 和 ~org-roam-node-level~ 。
+3. 否则查找 ~org-roam-capture--info~ 的 ~foo~ 值。这是一个在捕获过程开始前设置的内部变量。
+4. 如果上述都不适用,使用 ~completing-read~ 读取字符串。
+   a. Org-roam 还提供 ~${foo=default_val}~ 语法,如果提供默认值,将是 ~foo~ 键在 minibuffer 完成期间的初始值。
+
+可以通过检查 ~org-roam-node~ 结构来查看节点的可用键列表。在撰写本文时,它是:
+
+#+begin_src emacs-lisp
+(cl-defstruct (org-roam-node (:constructor org-roam-node-create)
+                             (:copier nil))
+  "A heading or top level file with an assigned ID property."
+  file file-hash file-atime file-mtime
+  id level point todo priority scheduled deadline title properties olp
+  tags aliases refs)
+#+end_src
+
+这使得 ~${file}~, ~${file-hash}~ 等都是有效的替换。
+
+* Extensions
+** org-roam-protocol
+
+Org-roam provides extensions for capturing content from external applications
+such as the browser, via ~org-protocol~. Org-roam extends ~org-protocol~ with 2
+protocols: the ~roam-node~ and ~roam-ref~ protocols.
+
+*** Installation
+
+To enable Org-roam's protocol extensions, simply add the following to your init
+file:
+
+#+BEGIN_SRC emacs-lisp
+(require 'org-roam-protocol)
+#+END_SRC
+
+We also need to set up ~org-protocol~: the instructions for setting up
+~org-protocol~ are reproduced here.
+
+On a high-level, external calls are passed to Emacs via ~emacsclient~.
+~org-protocol~ intercepts these and runs custom actions based on the protocols
+registered. Hence, to use ~org-protocol~, once must:
+
+1. launch the ~emacsclient~ process
+2. Register ~org-protocol://~ as a valid scheme-handler
+
+The instructions for the latter for each operating system is detailed below.
+
+**** Linux
+For Linux users, create a desktop application in
+~~/.local/share/applications/org-protocol.desktop~:
+
+#+begin_example
+[Desktop Entry]
+Name=Org-Protocol
+Exec=emacsclient %u
+Icon=emacs-icon
+Type=Application
+Terminal=false
+MimeType=x-scheme-handler/org-protocol
+#+end_example
+
+Associate ~org-protocol://~ links with the desktop application by
+running in your shell:
+
+#+BEGIN_SRC bash
+xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
+#+END_SRC
+
+To disable the "confirm" prompt in Chrome, you can also make Chrome show a
+checkbox to tick, so that the ~Org-Protocol Client~ app will be used without
+confirmation. To do this, run in a shell:
+
+#+BEGIN_SRC bash
+sudo mkdir -p /etc/opt/chrome/policies/managed/
+sudo tee /etc/opt/chrome/policies/managed/external_protocol_dialog.json >/dev/null <<'EOF'
+{
+  "ExternalProtocolDialogShowAlwaysOpenCheckbox": true
+}
+EOF
+sudo chmod 644 /etc/opt/chrome/policies/managed/external_protocol_dialog.json
+#+END_SRC
+
+and then restart Chrome (for example, by navigating to <chrome://restart>) to
+make the new policy take effect.
+
+See [[https://www.chromium.org/administrators/linux-quick-start][here]] for more info on the ~/etc/opt/chrome/policies/managed~ directory and
+[[https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ExternalProtocolDialogShowAlwaysOpenCheckbox][here]] for information on the ~ExternalProtocolDialogShowAlwaysOpenCheckbox~ policy.
+
+**** Mac OS
+For Mac OS, we need to create our own application.
+
+1. Launch Script Editor
+2. Use the following script, paying attention to the path to ~emacsclient~:
+
+#+begin_src emacs-lisp
+  on open location this_URL
+      set EC to "/usr/local/bin/emacsclient --no-wait "
+      set filePath to quoted form of this_URL
+      do shell script EC & filePath
+      tell application "Emacs" to activate
+  end open location
+#+end_src
+
+3. Save the script in ~/Applications/OrgProtocolClient.app~, changing the script type to
+   "Application", rather than "Script".
+4. Edit ~/Applications/OrgProtocolClient.app/Contents/Info.plist~, adding the
+   following before the last ~</dict>~ tag:
+
+#+begin_src text
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>org-protocol handler</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>org-protocol</string>
+      </array>
+    </dict>
+  </array>
+#+end_src
+
+5. Save the file, and run the ~OrgProtocolClient.app~ to register the protocol.
+
+To disable the "confirm" prompt in Chrome, you can also make Chrome
+show a checkbox to tick, so that the ~OrgProtocol~ app will be used
+without confirmation. To do this, run in a shell:
+
+#+BEGIN_SRC bash
+defaults write com.google.Chrome ExternalProtocolDialogShowAlwaysOpenCheckbox -bool true
+#+END_SRC
+
+If you're using [[https://github.com/railwaycat/homebrew-emacsmacport][Emacs Mac Port]], it registered its `Emacs.app` as the default
+handler for the URL scheme `org-protocol`. To make ~OrgProtocol.app~
+the default handler instead, run:
+
+#+BEGIN_SRC bash
+defaults write com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers -array-add \
+'{"LSHandlerPreferredVersions" = { "LSHandlerRoleAll" = "-"; }; LSHandlerRoleAll = "org.yourusername.OrgProtocol"; LSHandlerURLScheme = "org-protocol";}'
+#+END_SRC
+
+Then restart your computer.
+
+***** Testing org-protocol
+
+To test that you have the handler setup and registered properly from the command
+line you can run:
+
+#+begin_src bash
+  open org-protocol://roam-ref\?template=r\&ref=test\&title=this
+#+end_src
+
+If you get an error similar too this or the wrong handler is run:
+
+#+begin_quote
+No application knows how to open URL org-protocol://roam-ref?template=r&ref=test&title=this (Error Domain=NSOSStatusErrorDomain Code=-10814 "kLSApplicationNotFoundErr: E.g. no application claims the file" UserInfo={_LSLine=1489, _LSFunction=runEvaluator}).
+
+#+end_quote
+
+You may need to manually register your handler, like this:
+
+#+begin_src bash
+/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -R  -f /Applications/OrgProtocolClient.app
+#+end_src
+
+Here is a link to the lsregister command that is really useful: https://eclecticlight.co/2019/03/25/lsregister-a-valuable-undocumented-command-for-launchservices/
+**** Windows
+For Windows, create a temporary ~org-protocol.reg~ file:
+
+#+BEGIN_SRC text
+REGEDIT4
+
+[HKEY_CLASSES_ROOT\org-protocol]
+@="URL:Org Protocol"
+"URL Protocol"=""
+[HKEY_CLASSES_ROOT\org-protocol\shell]
+[HKEY_CLASSES_ROOT\org-protocol\shell\open]
+[HKEY_CLASSES_ROOT\org-protocol\shell\open\command]
+@="\"C:\\Windows\\System32\\wsl.exe\" emacsclient \"%1\""
+#+END_SRC
+
+The above will forward the protocol to WSL. If you run Emacs natively on
+Windows, replace the last line with:
+
+#+BEGIN_SRC text
+@="\"c:\\path\\to\\emacs\\bin\\emacsclientw.exe\"  \"%1\""
+#+END_SRC
+
+After executing the .reg file, the protocol is registered and you can delete the
+file.
+
+*** The roam-node protocol
+
+The roam-node protocol opens the node with ID specified by the ~node~ key (e.g.
+~org-protocol://roam-node?node=node-id~). ~org-roam-graph~ uses this to make the
+graph navigable.
+
+*** The roam-ref protocol
+
+This protocol finds or creates a new note with a given ~ROAM_REFS~:
+
+[[file:images/roam-ref.gif]]
+
+To use this, create the following [[https://en.wikipedia.org/wiki/Bookmarklet][bookmarklet]] in your browser:
+
+#+BEGIN_SRC javascript
+  javascript:location.href =
+      'org-protocol://roam-ref?template=r&ref='
+      + encodeURIComponent(location.href)
+      + '&title='
+      + encodeURIComponent(document.title)
+      + '&body='
+      + encodeURIComponent(window.getSelection())
+#+END_SRC
+
+or as a keybinding in ~qutebrowser~ in , using the ~config.py~ file (see
+[[https://github.com/qutebrowser/qutebrowser/blob/master/doc/help/configuring.asciidoc][Configuring qutebrowser]]):
+
+#+BEGIN_SRC python
+  config.bind("<Ctrl-r>", "open javascript:location.href='org-protocol://roam-ref?template=r&ref='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)")
+#+END_SRC
+
+where ~template~ is the template key for a template in
+~org-roam-capture-ref-templates~ (see [[*The Templating System][The Templating System]]).
+
+** org-roam-graph
+
+Org-roam provides basic graphing capabilities to explore interconnections
+between notes, in ~org-roam-graph~. This is done by performing SQL queries and
+generating images using [[https://graphviz.org/][Graphviz]]. The graph can also be navigated: see [[*org-roam-protocol][org-roam-protocol]].
+
+The entry point to graph creation is ~org-roam-graph~.
+
+- Function: org-roam-graph & optional arg node
+
+Build and display a graph for NODE.
+ARG may be any of the following values:
+
+  - ~nil~       show the full graph.
+  - ~integer~   an integer argument ~N~ will show the graph for the connected
+                components to node up to ~N~ steps away.
+
+- User Option: org-roam-graph-executable
+
+  Path to the graphing executable (in this case, Graphviz). Set this if Org-roam
+  is unable to find the Graphviz executable on your system.
+
+  You may also choose to use ~neato~ in place of ~dot~, which generates a more
+  compact graph layout.
+
+- User Option: org-roam-graph-viewer
+
+  Org-roam defaults to using Firefox (located on PATH) to view the SVG, but you
+  may choose to set it to:
+
+  1. A string, which is a path to the program used
+  2. a function accepting a single argument: the graph file path.
+
+  ~nil~ uses ~view-file~ to view the graph.
+
+  If you are using WSL2 and would like to open the graph in Windows, you can use
+  the second option to set the browser and network file path:
+
+  #+BEGIN_SRC emacs-lisp
+  (setq org-roam-graph-viewer
+      (lambda (file)
+        (let ((org-roam-graph-viewer "/mnt/c/Program Files/Mozilla Firefox/firefox.exe"))
+          (org-roam-graph--open (concat "file://///wsl$/Ubuntu" file)))))
+  #+END_SRC
+
+*** Graph Options
+
+Graphviz provides many options for customizing the graph output, and Org-roam
+supports some of them. See https://graphviz.gitlab.io/_pages/doc/info/attrs.html
+for customizable options.
+
+- User Option: org-roam-graph-filetype
+
+  The file type to generate for graphs. This defaults to ~"svg"~.
+
+- User Option: org-roam-graph-extra-config
+
+  Extra options passed to graphviz for the digraph (The "G" attributes).
+  Example: ~'~(("rankdir" . "LR"))~
+
+- User Option: org-roam-graph-node-extra-config
+
+  An alist of options to style the nodes.
+  The car of the alist node type such as ~"id"~, or ~"http"~. The cdr of the
+  list is another alist of Graphviz node options (the "N" attributes).
+
+- User Option: org-roam-graph-edge-extra-config
+
+  Extra options for edges in the graphviz output (The "E" attributes).
+  Example: ~'(("dir" . "back"))~
+
+** org-roam-dailies
+
+Org-roam provides journaling capabilities akin to
+Org-journal with ~org-roam-dailies~.
+
+*** Configuration
+
+For ~org-roam-dailies~ to work, you need to define two variables:
+
+- Variable: ~org-roam-dailies-directory~
+
+  Path to daily-notes. This path is relative to ~org-roam-directory~.
+
+- Variable: ~org-roam-dailies-capture-templates~
+
+  Capture templates for daily-notes in Org-roam.
+
+Here is a sane default configuration:
+
+#+begin_src emacs-lisp
+(setq org-roam-dailies-directory "daily/")
+
+(setq org-roam-dailies-capture-templates
+      '(("d" "default" entry
+         "* %?"
+         :target (file+head "%<%Y-%m-%d>.org"
+                            "#+title: %<%Y-%m-%d>\n"))))
+#+end_src
+
+See [[*The Templating System][The Templating System]] for creating new templates.
+
+*** Usage
+
+~org-roam-dailies~ provides these interactive functions:
+
+- Function: ~org-roam-dailies-capture-today~ &optional goto
+
+  Create an entry in the daily note for today.
+
+  When ~goto~ is non-nil, go to the note without creating an entry.
+
+- Function: ~org-roam-dailies-goto-today~
+
+  Find the daily note for today, creating it if necessary.
+
+There are variants of those commands for ~-yesterday~ and ~-tomorrow~:
+
+- Function: ~org-roam-dailies-capture-yesterday~ n &optional goto
+
+  Create an entry in the daily note for yesterday.
+
+  With numeric argument ~n~, use the daily note ~n~ days in the past.
+
+- Function: ~org-roam-dailies-goto-yesterday~
+
+  With numeric argument N, use the daily-note N days in the future.
+
+There are also commands which allow you to use Emacs’s ~calendar~ to find the date
+
+- Function: ~org-roam-dailies-capture-date~
+
+  Create an entry in the daily note for a date using the calendar.
+
+  Prefer past dates, unless ~prefer-future~ is non-nil.
+
+  With a 'C-u' prefix or when ~goto~ is non-nil, go the note without
+  creating an entry.
+
+- Function: ~org-roam-dailies-goto-date~
+
+  Find the daily note for a date using the calendar, creating it if necessary.
+
+  Prefer past dates, unless ~prefer-future~ is non-nil.
+
+- Function: ~org-roam-dailies-find-directory~
+
+  Find and open ~org-roam-dailies-directory~.
+
+- Function: ~org-roam-dailies-goto-previous-note~
+
+  When in an daily-note, find the previous one.
+
+- Function: ~org-roam-dailies-goto-next-note~
+
+  When in an daily-note, find the next one.
+** org-roam-export
+
+Because Org-roam files are plain org files, they can be exported easily using
+~org-export~ to a variety of formats, including ~html~ and ~pdf~. However,
+Org-roam relies heavily on ID links, which Org's html export has poor support
+of. To fix this, Org-roam provides a bunch of overrides to better support
+export. To use them, simply run:
+
+#+begin_src emacs-lisp
+  (require 'org-roam-export)
+#+end_src
+
+* 性能优化
+
+** 垃圾回收
+
+在缓存构建过程中,Org-roam生成大量内存数据结构(如Org文件AST),这些结构在使用后被丢弃。
+这些结构在定期间隔进行垃圾收集(参见 [[info:elisp#Garbage Collection][info:elisp#Garbage Collection]])。
+
+Org-roam 提供选项 ~org-roam-db-gc-threshold~ 来临时更改GC触发的阈值,用于这些内存密集型操作。为了减少垃圾收集过程的次数,
+可以将 ~org-roam-db-gc-threshold~ 设置为高值(如 ~most-positive-fixnum~ ):
+
+#+BEGIN_SRC emacs-lisp
+(setq org-roam-db-gc-threshold most-positive-fixnum)
+#+END_SRC
+
+理解如何调优 Org-Roam 的性能至关重要。尤其是在构建缓存这种内存密集型操作中,性能优化可以大大提高 org-roam 的速度和稳定性。
+
+掌握调优技巧,让您的知识管理系统高效、流畅。不仅可以节省宝贵的时间,也能提供更好的用户体验。
+
+* Org-mode生态系统
+
+因为 Org-roam 建立在 Org-mode 之上,它受益于已经有的大量软件包。
+
+** 用 ~winner-mode~ 浏览历史
+
+~winner-mode~ 是一个全局次要模式,允许撤销和重做窗口配置的更改。它包含在GNU Emacs 版本20以后。
+
+~winner-mode~ 可以用作 Org-roam 的简单浏览器历史版本。通过 org-roam 链接的每个单击(来自 Org 文件和后续链接缓冲区)都会导
+致窗口配置的更改,这些更改可以使用 ~winner-mode~ 来撤销和重做。要使用 ~winner-mode~,简单启用它并绑定相应的交互函数:
+
+#+BEGIN_SRC emacs-lisp
+(winner-mode +1)
+(define-key winner-mode-map (kbd "<M-left>") #'winner-undo)
+(define-key winner-mode-map (kbd "<M-right>") #'winner-redo)
+#+END_SRC
+
+** 笔记版本控制
+
+由于 Org-roam 笔记只是普通文本,使用版本控制系统(如[[<https://git-scm.com/>][Git]])跟踪笔记数据库中的更改是很简单的。简单地将 ~org-roam-directory~ 初
+始化为 Git 存储库,并定期提交您的文件。[[<https://magit.vc/>][Magit]] 是 Emacs 内部访问 Git 的好工具。
+
+此外,通过查看文件历史记录,观察特定备注的演变过程可能很有用。[[<https://gitlab.com/pidu/git-timemachine>][Git-timemachine]] 允许您访问被跟踪的 Org-roam 备注的历史版本。
+
+** Deft 全文搜索
+
+[[&lt;<https://jblevins.org/projects>/>][Deft]] 提供了一个漂亮的界面来浏览和过滤 org-roam 笔记。
+
+#+BEGIN_SRC emacs-lisp
+(use-package deft
+   :after org
+   :bind
+   ("C-c n d" . deft)
+   :custom
+   (deft-recursive t)
+   (deft-use-filter-string-for-filename t)
+   (deft-default-extension "org")
+   (deft-directory org-roam-directory))
+#+END_SRC
+
+当文件数量变得巨大时,Deft 界面会很快变慢。[[<https://github.com/hasu/notdeft>][Notdeft]]是 Deft 的一个分支,使用外部搜索引擎和索引器。
+
+** Org-journal
+
+[[<https://github.com/bastibe/org-journal>][Org-journal]] 为 Org-mode 提供了日志功能。它的许多功能已经被吸收到 Org-roam 中,称为[[*org-roam-dailies][~org-roam-dailies~]]。如果您想将详细的日志条目与您想在记事本上编写的想法分开,它仍然是一个很好的工具。
+
+#+BEGIN_SRC emacs-lisp
+(use-package org-journal
+   :bind
+   ("C-c n j" . org-journal-new-entry)
+   :custom
+   (org-journal-date-prefix "#+title: ")
+   (org-journal-file-format "<http://%Y-%m-%d.org|%Y-%m-%d.org>")
+   (org-journal-dir "/path/to/journal/files/")
+   (org-journal-date-format "%A, %d %B %Y"))
+#+END_SRC
+
+** Org-download
+
+[[<https://github.com/abo-abo/org-download>][Org-download]]  允许您将网页中的图像截图和粘贴到您的笔记中:
+
+#+CAPTION: org-download
+[[file:images/org-download.gif]]
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-download
+    :after org
+    :bind
+    (:map org-mode-map
+          (("s-Y" . org-download-screenshot)
+           ("s-y" . org-download-yank))))
+#+END_SRC
+
+** mathpix.el
+
+[[<https://github.com/jethrokuan/mathpix.el>][mathpix.el]]使用[[&lt;<https://mathpix>>][Mathpix]]的 API 将剪辑转换为 latex 方程式:
+
+#+CAPTION:mathpix
+[[file:images/mathpix.gif]]
+
+#+BEGIN_SRC emacs-lisp
+(use-package mathpix.el
+     :straight (:host github :repo "jethrokuan/mathpix.el")
+     :custom ((mathpix-app-id "app-id")
+              (mathpix-app-key "app-key"))
+     :bind
+     ("C-x m" . mathpix-screenshot))
+#+END_SRC
+
+** Org-noter / Interleave
+
+[[https://github.com/weirdNox/org-noter][Org-noter]]和[[https://hub.com/rudolfochrist/interleave][Interleave]]都是允许在 Org 模式下同步注释文档(PDF,EPUB等)的项目。
+
+** 参考文献
+
+Org 9.5增加了原生的引用和参考文献功能,称为 "org-cite" ,org-roam 支持该功能。
+
+[[https://github.com/org-roam/org-roam-bibtex][org-roam-bibtex]]在
+[[https://github.com/jkitchin/org-ref][org-ref]],[[https://github.com/tmalsburg/helm-bibtex][helm-bibtex]]与 ~org-roam~
+之间提供了紧密的集成。这有助于用 ~org-roam~ 管理你的参考文献笔记。
+
+例如,虽然 ~helm-bibtex~ 提供了访问参考文献条目的笔记的功能,但 ~org-roam-bibtex~ 通过能访问带正确 ~ROAM_REFS~ 的文件的功能来扩展它。
+
+** 间隔重复
+
+[[https://www.leonrische.me/fc/index.html][Org-fc]]是一个适用于大量文件间隔重复系统。其他可选方案包括[[https://orgmode.org/worg/org-contrib/org-drill.html][org-drill]]和[[https://github.com/abo-abo/pamparam][pamparam]]。
+
+要使用 Anki 进行间隔重复,[[https://github.com/louietan/anki-editor][anki-editor]]允许你在 Org 模式下编写卡片,并通过
+[[https://github.com/FooSoft/anki-connect#installation][anki-connect]]将卡片同步到 Anki。
+
+* FAQ
+** 我如何拥有多个 Org-roam 目录?
+
+Emacs 支持目录本地变量,允许 ~org-roam-directory~ 的值在不同目录中不同。它通过检查名为 ~.dir-locals.el~ 的文件来实现这一点。
+
+要添加对多个目录的支持,使用目录本地变量覆盖 ~org-roam-directory~ 变量。 ~.dir-locals.el~ 可能包含的内容如下:
+
+#+BEGIN_SRC emacs-lisp
+  ((nil . ((org-roam-directory . "/path/to/alt/org-roam-dir")
+           (org-roam-db-location . "/path/to/alt/org-roam-dir/org-roam.db"))))
+#+END_SRC
+
+注意, ~org-roam-directory~ 和 ~org-roam-db-location~ 应该是绝对路径,而不是相对路径。
+
+或者,如果你希望调用函数,可以使用 ~eval~:
+
+#+BEGIN_SRC emacs-lisp
+   ((nil . ((eval . (setq-local
+                     org-roam-directory (expand-file-name (locate-dominating-file
+                                                           default-directory ".dir-locals.el"))))
+           (eval . (setq-local
+                     org-roam-db-location (expand-file-name "org-roam.db"
+                                                            org-roam-directory))))))
+#+END_SRC
+
+该目录内的所有文件将被视为独立的 Org-roam 文件集。记住,从该目录内的文件运行 ~org-roam-db-sync~ 至少一次。
+
+** 如何创建标题已经与候选者之一匹配的笔记?
+
+这种情况会出现,例如,当希望创建标题为"bar"的笔记时,"barricade"已经存在。
+
+解决方案取决于使用的迷你缓冲区完成框架。这里是解决方案:
+
+- Ivy :: 调用 ~ivy-immediate-done~,通常绑定到 ~C-M-j~ 。或者,将 ~ivy-use-selectable-prompt~ 设置为 ~t~ ,这样"bar"现在可以选择。
+- Helm :: Org-roam 应该在候选列表顶部提供一个可选的 "[?] bar" 候选项。
+
+** 如何阻止 Org-roam 在各个地方创建ID?
+
+除 Org-roam 提供的交互命令外,Org-roam 不会在各个地方创建ID。如果你发现ID即使在你不想要它们的时候也在被创建(例如,在编织
+Org 文件时),请检查你为 ~org-id-link-to-org-use-id~ 设置的值:将其设置为 ~'create-if-interactive~ 是一个流行的选项。
+
+** 如何从 Roam Research 迁移?
+
+Fabio 制作了一个命令行工具,可以将从 Roam Research 导出的 markdown 文件转换为 Org-roam 兼容的 markdown。更详细的说明[[https://github.com/fabioberger/roam-migration][在该仓库]]中提供。
+
+** 如何从Org-roam v1迁移?
+
+那些来自 Org-roam v1的人最好把v2当作全新的软件。V2有一个更小的核心和较少的移动部分,同时保留了大部分功能。建议阅读上面的关于节点的文档。
+
+仍然希望将v1中收集的笔记迁移到v2。
+要将v1笔记迁移到v2,请使用 =M-x org-roam-migrate-wizard= 。
+[[https://d12frosted.io/posts/2021>1-path-to-org-roam-v2.html][这篇博客]]提供了v2新内容的良好概览以及如何迁移。
+
+基本上,要将v1的笔记迁移到v2,必须:
+
+1. 为所有现有笔记添加ID。这些位于顶级属性抽屉中
+   (尽管请注意,在v2中,不是所有文件都需要ID)。
+2. 更新 Org-roam 数据库以符合新模式。
+3. 将 ~#+ROAM_KEY~ 替换为 ~ROAM_REFS~ 属性
+4. 将 ~#+ROAM_ALIAS~ 替换为 ~ROAM_ALIASES~ 属性
+5. 将 ~#+ROAM_TAGS~ 移至 ~#+FILETAGS~ 属性(用于文件级节点)
+   和 ~ROAM_TAGS~ 属性(用于标题节点)
+6. 用ID链接替换现有的文件链接。
+
+** 如何发布我的带有 Internet 友好图表的笔记?
+
+默认的图表生成器会生成一个具有 [[https://orgmode.org/worg/org-contrib/org-protocol.html][org-protocol]] 处理程序的图表,当您本地工作时这很方便,但当您要发布注释以进行远程访问时会不方
+便。同样,它默认显示 Emacs 中的图表,这具有完全相同的警告。可以使用 org-mode 的原生[[https://orgmode.org/manual/Publishing.html][发布]]功能以以下方式解决此问题:
+
+1. 配置 org-mode 将您的 org-roam 笔记发布为项目。
+
+2. 创建一个函数来覆盖默认的 org-protocol 链接创建函数(=org-roam-default-link-builder=)。
+
+3. 创建一个在图表创建结束时调用的钩子,将生成的图表复制到合适的位置。
+
+下面的示例代码用于发布到本地目录,其中单独的 shell 脚本将文件复制到远程站点。
+
+*** 配置 org-mode 进行发布
+这有两个步骤:
+1. 设置发布您的注释的 /roam/ 项目。
+2. 配置 /sitemap.html/ 生成。
+3. 设置 =org-publish= 以生成图表。
+
+这将需要如下代码:
+#+begin_src emacs-lisp
+  (defun roam-sitemap (title list)
+    (concat "#+OPTIONS: ^:nil author:nil html-postamble:nil\n"
+            "#+SETUPFILE: ./simple_inline.theme\n"
+            "#+TITLE: " title "\n\n"
+            (org-list-to-org list) "\nfile:sitemap.svg"))
+
+  (setq my-publish-time 0)   ; 参见下一节了解上下文
+  (defun roam-publication-wrapper (plist filename pubdir)
+    (org-roam-graph)
+    (org-html-publish-to-html plist filename pubdir)
+    (setq my-publish-time (cadr (current-time))))
+
+  (setq org-publish-project-alist
+   '(("roam"
+      :base-directory "~/roam"
+      :auto-sitemap t
+      :sitemap-function roam-sitemap
+      :sitemap-title "Roam notes"
+      :publishing-function roam-publication-wrapper
+      :publishing-directory "~/roam-export"
+      :section-number nil
+      :table-of-contents nil
+      :style "<link rel=\"stylesheet\" href=\"../other/mystyle.cs\" type=\"text/css\">")))
+#+end_src
+
+*** 重写默认的链接创建函数
+下面的代码将生成一个指向生成的 html 文件的链接,而不是默认的 org-protocol 链接。
+#+begin_src emacs-lisp
+  (defun org-roam-custom-link-builder (node)
+    (let ((file (org-roam-node-file node)))
+      (concat (file-name-base file) ".html")))
+
+  (setq org-roam-graph-link-builder 'org-roam-custom-link-builder)
+#+end_src
+
+*** 将生成的文件复制到导出目录
+=org-roam-graph= 的默认行为是生成图表并在 Emacs 中显示它。 有一个 =org-roam-graph-generation-hook= 可用于访问文件名,以便将其复制到发布目录。示例代码如下:
+
+#+begin_src emacs-lisp
+  (add-hook 'org-roam-graph-generation-hook
+            (lambda (dot svg) (if (< (- (cadr (current-time)) my-publish-time) 5)
+                                  (progn (copy-file svg "~/roam-export/sitemap.svg" 't)
+                                         (kill-buffer (file-name-nondirectory svg))
+                                         (setq my-publish-time 0)))))
+#+end_src
+
+** 我看到这个“Selecting deleted buffer”错误。我该怎么办?
+
+“Selecting deleted buffer”错误通常发生在您没有 ~emacsql-sqlite~ 可执行文件时。 Org-roam 依赖此可执行文件正常运行,并未捕
+获此错误。这个问题在 Windows 设置中最常见。您可以浏览
+[[https://github.com/org-ro>g-roam/issues?q=is%3Aissue+selecting+deleted][这里]]发布的各种 GitHub 问题。
+
+要修复此问题,您可以尝试以下操作:
+
+1. 如果在Windows上,尝试使用[[https://github.com/nobiot/emacsql-sqlite.exe][这个]]已被证明有效的系统二进制文件替换您的系统二进制文件
+2. 使用 ~emacsql-sqlite3~ 选项而不是编译您自己的 emacsql 二进制文件(请参见[[*如何缓存*][如何缓存]])。
+
+* Org-roam 开发者指南
+** Org-roam 的设计原理
+
+Org-roam 的主要动机是对双重表示的需要。我们(人类)喜欢在纯文本环境中操作。Org 模式的语法规则简单明了,完全符合我们的思维方
+式。这也使我们能够使用喜欢的工具和包来探索和编辑我们的笔记。Org 模式简单地是可用的最强大的纯文本格式,支持图像,LaTeX,TODO计划等等。
+
+但是,这种纯文本格式简直不适合探索这些笔记:纯文本格式简直不适合回答大规模的复杂查询(例如,我有多少任务要在下周完成?)。当文
+件数量变得难以控制时,像Org 议程这样的接口会变得非常缓慢,这种情况很快就会出现。
+
+在其核心,Org-roam 提供了一个数据库抽象层,为目前已有的纯文本提供双重表示。这使我们(人类)可以继续使用纯文本工作,而程序可以利用数据库层执行复杂查询。这些功能包括但不限于:
+
+- 链接图遍历和可视化
+- 瞬间的SQL样式查询标题
+  - 我的TODO是什么,预定X,或到Y期限?
+- 访问节点的属性,如其标签,引用,TODO状态或优先级
+
+所有这些功能都是由这个数据库抽象层提供的。因此,在其核心,Org-roam 的主要目标是提供一个廉价维护,易于理解且尽可能实时更新的
+双重表示。Org-roam 还为希望对其 Org 文件执行编程查询的用户公开此数据库抽象层的API。
+
+** 构建 Org-roam 的扩展和高级定制
+
+因为 Org-roam 的核心功能很小,所以可以在其上构建扩展,这在某些情况下是值得的。这些扩展可以具有以下一个或多个功能:
+
+- 访问 Org-roam 数据库
+- 使用/修改 Org-roam 的交互命令
+
+Org-roam 不保证扩展会随着 Org-roam 的发展而持续工作,但是通过遵循这些简单的规则,扩展可以对 Org-roam 的本地更改具有强大的抵抗力。
+
+1. 扩展不应修改数据库模式。任何需要缓存额外数据的扩展应向 Org-roam 提出请求。
+2. 需要访问数据库的扩展应明确声明支持数据库版本(~org-roam-db-version~),并仅在支持可用时有条件地加载。
+
+如果遵循这些规则,Org-roam 的API和命令可能会改变,但扩展仍将继续工作,只要其不依赖于数据库模式的更改。此外,Org-roam 的作者
+可能会考虑将常见的扩展功能合并到 Org-roam 的主要分支中。总之,这为构建 Org-roam 的稳定而强大的扩展提供了一个良好的环境。
+
+请注意,尽管 Org-roam 的API可以使用,但 Org-roam 的命令是设计为交互使用的。对 Org-roam 的命令进行不适当的修改可能会导致意
+外行为或数据损坏。如果需要修改或扩展命令,最好是从 Org-roam 派生一个衍生品,而不是直接修改 Org-roam。
+
+*** 访问数据库
+
+访问数据库单独由 ~org-roam-db-query~ 提供,例如:
+
+#+begin_src emacs-lisp
+(org-roam-db-query [:select * :from nodes])
+#+end_src
+
+可以通过查阅 ~org-roam-db--table-schemata~ 来参考数据库模式。Org-roam 中有多个调用 ~org-roam-db-query~ 的帮助函数,这些函
+数可能会发生变化。为了确保扩展/定制对变化具有抵抗力,扩展应仅使用 ~org-roam-db-query~,如果必要,可以复制SQL查询。
+
+*** 访问和修改节点
+
+节点接口使用 ~cl-defstruct~ 进行了清晰的定义。访问节点的主要方法是 ~org-roam-node-at-point~ 和 ~org-roam-node-read~:
+
+- 函数: ~org-roam-node-at-point &optional assert~
+
+  返回光标处的节点。如果断言,如果光标处没有节点,则会抛出错误。
+
+- 函数: ~org-roam-node-read &optional initial-input filter-fn sort-fn require-match~
+
+  读取并返回一个 ~org-roam-node~ 。
+  INITIAL-INPUT 是 minibuffer 提示值的初始值。过滤器FN是一个过滤节点的函数:它接受一个参数(一个 ~org-roam-node~),当返回
+  nil 时,节点将被过滤出去。
+  SORT-FN 是对节点进行排序的函数。请参阅 ~org-roam-node-read-sort-by-file-mtime~ 作为示例排序函数。
+  如果需要匹配, minibuffer 提示将需要匹配。
+
+获得节点后,你可以使用节点的访问器,例如 ~org-roam-node-id~ 或 ~org-roam-node-todo~ 。
+
+可以在节点上定义(或覆盖现有的)属性。这只需使用 ~org-roam-node~struct 上的 ~cl-defmethod~ 进行简单操作:
+
+#+begin_src emacs-lisp
+(cl-defmethod org-roam-node-namespace ((node org-roam-node))
+ "从NODE返回命名空间。
+ 命名空间是节点文件最后一个目录。"
+ (file-name-nondirectory
+  (directory-file-name
+   (file-name-directory (org-roam-node-file node)))))
+#+end_src
+
+上面的代码段在 ~org-roam-node~ 上定义了一个新的属性 ~namespace~,使其可以在捕获模板中使用。
+
+*** 扩展捕获系统
+
+Org-roam 对 Org 的捕获系统应用了一些修补,以改善用户体验,有时最好使用 Org-roam 的捕获系统。扩展中使用的公开函数是 ~org-roam-capture-~:
+
+- 函数: ~org-roam-capture- &key goto keys node info props templates~
+
+  主入口点。
+  GOTO和KEYS对应于 ~org-capture~ 参数。
+  INFO 是一个填充 Org-roam 捕获模板的 plist。
+  NODE 是一个包含有关节点信息的 org-roam-node 构造。
+  PROPS 是每个模板的其他 Org-roam 属性的 plist。
+  TEMPLATES 是 org-roam 模板列表。
+
+使用 ~org-roam-capture-~ 的扩展示例是 ~org-roam-dailies~ 本身:
+
+#+begin_src emacs-lisp
+(defun org-roam-dailies--capture (time &optional goto)
+  "根据TIME捕获每日笔记中的条目,如有必要创建它。
+
+  当GOTO非nil时,转到笔记而不创建条目。"
+  (org-roam-capture- :goto (when goto '(4))
+                     :node (org-roam-node-create)
+                     :templates org-roam-dailies-capture-templates
+                     :props (list :override-default-time time))
+  (when goto (run-hooks 'org-roam-dailies-find-file-hook)))
+#+end_src
+
+使用 ~org-roam-capture-~,扩展可以:
+
+- 指定要跳转到的位置(通过:goto参数)
+- 提供节点信息(通过:node参数)
+- 提供用于填充模板的信息(通过:info参数)
+- 指定模板(通过:templates参数)
+- 提供其他模板属性(通过:props参数)
+
+所以,使用 ~org-roam-capture-~,扩展可以获得 Org-roam 捕获系统的全部功能,从而实现复杂而强大的捕获行为。
+
+* _ Copying
+:PROPERTIES:
+:COPYING:    t
+:END:
+
+#+BEGIN_QUOTE
+Copyright (C) 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+
+You can redistribute this document and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This document is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+#+END_QUOTE
+
+* 附录
+** 记笔记的工作流程
+- 书籍::
+  - [[https://www.goodreads.com/book/show/34507927-how-to-take-smart-notes][如何做好笔记]]
+- 文章::
+  - [[https://www.lesswrong.com/posts/NfdHG6oHBJ8Qxc26s/the-zettelkasten-method-1][Zettelkasten方法- LessWrong 2.0]]
+  - [[https://reddit.com/r/RoamResearch/comments/eho7de/building_a_second_brain_in_roamand_why_you_might][在Roam中构建第二大脑...以及你为什么可能想要:RoamResearch]]
+  - [[https://www.nateliason.com/blog/roam][Roam研究:我为什么喜欢它以及我如何使用它 - Nat Eliason]]
+  - [[https://twitter.com/adam_keesling/status/1196864424725774336?s=20][Adam Keesling的Twitter线程]]
+  - [[https://blog.jethro.dev/posts/how_to_take_smart_notes_org/][如何用Org模式做好记笔记 · Jethro Kuan]]
+- 线程::
+  - [[https://news.ycombinator.com/item?id=22473209][HN:如何做好记笔记]]
+- 视频::
+  - [[https://www.youtube.com/watch?v=RvWic15iXjk][如何在20分钟内使用Roam大纲新文章]]
+** 生态系统
+
+* Keystroke Index
+:PROPERTIES:
+:APPENDIX:   t
+:INDEX:      ky
+:COOKIE_DATA: recursive
+:END:
+* Command Index
+:PROPERTIES:
+:APPENDIX:   t
+:INDEX:      cp
+:END:
+* Function Index
+:PROPERTIES:
+:APPENDIX:   t
+:INDEX:      fn
+:END:
+* Variable Index
+:PROPERTIES:
+:APPENDIX:   t
+:INDEX:      vr
+:END:
+
+* Footnotes
+[fn:1] 取决于你的完成框架,你可能需要按TAB键查看列表。
+[fn:2] 评估 elisp 的两种简单方法:
+   1. 将光标放在闭合括号后运行 =M-x eval-last-sexp RET= 或者
+   2. 将光标放在 Org 文件代码块中(如 =#+BEGIN_SRC emacs-lisp=)并按 =C-c C-c= 。
+[fn:roam] 要更深入地了解 Roam,可以在记笔记的工作流程[[*Note-taking Workflows][Note-taking  Workflow]]中找到一组相关链接。
+
+# Local Variables:
+# eval: (require 'ol-info)
+# eval: (require 'ox-texinfo+ nil t)
+# eval: (auto-fill-mode +1)
+# after-save-hook: (lambda nil (progn (require 'ox-texinfo nil t) (org-texinfo-export-to-info)))
+# indent-tabs-mode: nil
+# org-src-preserve-indentation: nil
+# End:
