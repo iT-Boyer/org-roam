@@ -1,12 +1,6 @@
 ;;; org-roam-id.el --- ID-related utilities for Org-roam -*- lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
-
-;; Author: Jethro Kuan <jethrokuan95@gmail.com>
-;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (org "9.4") (magit-section "3.0.0"))
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -53,13 +47,12 @@ With optional argument MARKERP, return the position as a new marker."
    ((symbolp id) (setq id (symbol-name id)))
    ((numberp id) (setq id (number-to-string id))))
   (let ((node (org-roam-populate (org-roam-node-create :id id))))
-    (when-let ((file (org-roam-node-file node)))
+    (when-let* ((file (org-roam-node-file node)))
       (if markerp
-          (unwind-protect
-              (let ((buffer (or (find-buffer-visiting file)
-                                (find-file-noselect file))))
-                (with-current-buffer buffer
-                  (move-marker (make-marker) (org-roam-node-point node) buffer))))
+          (let ((buffer (or (find-buffer-visiting file)
+                            (find-file-noselect file))))
+            (with-current-buffer buffer
+              (move-marker (make-marker) (org-roam-node-point node) buffer)))
         (cons (org-roam-node-file node)
               (org-roam-node-point node))))))
 

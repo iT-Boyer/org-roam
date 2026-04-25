@@ -1,12 +1,12 @@
 ;;; org-roam.el --- A database abstraction layer for Org-mode -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; Author: Jethro Kuan <jethrokuan95@gmail.com>
 ;; URL: https://github.com/org-roam/org-roam
 ;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (org "9.4") (emacsql "4.0.0") (magit-section "3.0.0"))
+;; Version: 2.3.1
+;; Package-Requires: ((emacs "27.1") (compat "30.1") (org "9.6") (emacsql "4.3.3") (magit-section "4.4.2"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -71,15 +71,19 @@
 ;; majority of them can be found at https://github.com/org-roam and MELPA.
 ;;
 ;;; Code:
-(require 'dash)
 
 (require 'rx)
 (require 'seq)
 (require 'cl-lib)
 
+(require 'compat)
+
 (require 'magit-section)
 
 (require 'emacsql)
+;; REVIEW: is this require needed?
+;; emacsql-sqlite provides a common interface to an emacsql SQLite backend (e.g. emacs-sqlite-builtin)
+;; not to be confused with a backend itself named emacsql-sqlite that existed in emacsql < 4.0.
 (require 'emacsql-sqlite)
 
 (require 'org)
@@ -138,7 +142,7 @@ responsibility to ensure that."
   :group 'org-roam)
 
 (defcustom org-roam-file-exclude-regexp (list org-attach-id-dir)
-  "Files matching this regular expression or list of regular expressions are excluded from the Org-roam."
+  "Files matching this regexp or list of regexps are excluded from Org-roam."
   :type '(choice
           (repeat
            (string :tag "Regular expression matching files to ignore"))
@@ -185,12 +189,13 @@ in the list is found.
 By default, `executable-find' will be used to look up the path to
 the executable. If a custom path is required, it can be specified
 together with the method symbol as a cons cell. For example:
-'(find (rg . \"/path/to/rg\"))."
-  :type '(set (const :tag "find" find)
-              (const :tag "fd" fd)
-              (const :tag "fdfind" fdfind)
-              (const :tag "rg" rg)
-              (const :tag "elisp" nil)))
+\\='(find (rg . \"/path/to/rg\"))."
+  :type '(set
+          (const :tag "find" find)
+          (const :tag "fd" fd)
+          (const :tag "fdfind" fdfind)
+          (const :tag "rg" rg)
+          (const :tag "elisp" nil)))
 
 ;;; Library
 (defun org-roam-file-p (&optional file)
@@ -245,11 +250,6 @@ If BUFFER is not specified, use the current buffer."
            (setq path (buffer-file-name (buffer-base-buffer)))
            (org-roam-file-p path)))))
 
-(defun org-roam-buffer-list ()
-  "Return a list of buffers that are Org-roam files."
-  (--filter (org-roam-buffer-p it)
-            (buffer-list)))
-
 (defun org-roam--file-name-extension (filename)
   "Return file name extension for FILENAME.
 Like `file-name-extension', but does not strip version number."
@@ -288,12 +288,12 @@ Use external shell commands if defined in `org-roam-list-files-commands'."
 (defun org-roam--shell-command-files (cmd)
   "Run CMD in the shell and return a list of files.
 If no files are found, an empty list is returned."
-  (--> cmd
-       (shell-command-to-string it)
-       (ansi-color-filter-apply it)
-       (split-string it "\n")
-       (seq-filter (lambda (s)
-                     (not (or (null s) (string= "" s)))) it)))
+  (thread-last cmd
+               shell-command-to-string
+               ansi-color-filter-apply
+               (funcall (lambda (str) (split-string str "\n")))
+               (seq-filter (lambda (s)
+                             (not (or (null s) (string= "" s)))))))
 
 (defun org-roam--list-files-search-globs (exts)
   "Given EXTS, return a list of search globs.
@@ -322,8 +322,9 @@ E.g. (\".org\") => (\"*.org\" \"*.org.gpg\")"
 (defun org-roam--list-files-rg (executable dir)
   "Return all Org-roam files under DIR, using \"rg\", provided as EXECUTABLE."
   (let* ((globs (org-roam--list-files-search-globs org-roam-file-extensions))
-         (command (string-join `(,executable "-L" ,dir "--files"
-                                             ,@(mapcar (lambda (glob) (concat "-g " glob)) globs)) " ")))
+         (command (string-join `(
+                                 ,executable "-L" ,dir "--files"
+                                 ,@(mapcar (lambda (glob) (concat "-g " glob)) globs)) " ")))
     (org-roam--shell-command-files command)))
 
 (declare-function org-roam--directory-files-recursively "org-roam-compat")

@@ -1,11 +1,9 @@
 ;;; org-roam-protocol.el --- Protocol handler for roam:// links  -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
+
 ;; Author: Jethro Kuan <jethrokuan95@gmail.com>
 ;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (org "9.4") (org-roam "2.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -159,7 +157,7 @@ It should contain the FILE key, pointing to the path of the file to open.
   Example protocol string:
 
 org-protocol://roam-node?node=uuid"
-  (when-let ((node (plist-get info :node)))
+  (when-let* ((node (plist-get info :node)))
     (raise-frame)
     (org-roam-node-visit (org-roam-populate (org-roam-node-create :id node)) nil 'force))
   nil)

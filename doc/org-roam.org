@@ -1,23 +1,25 @@
 #+title: Org-roam User Manual
 #+author: Jethro Kuan
 #+email: jethrokuan95@gmail.com
-#+date: 2020-2022
+#+date: 2020-{{{year}}}
 #+language: en
 
-#+texinfo_deffn: t
 #+texinfo_dir_category: Emacs
-#+texinfo_dir_title: Org-roam: (org-roam).
+#+texinfo_dir_name: Org-roam: (org-roam).
 #+texinfo_dir_desc: Roam Research for Emacs.
-#+subtitle: for version 2.2.2
+#+subtitle: for {{{version}}}
 
 #+options: H:4 num:3 toc:nil creator:t ':t
 #+property: header-args :eval never
+#+macro: version (eval (concat "version " (or (getenv "VERSION") (if-let* ((tag (ignore-errors (car (process-lines "git" "describe" "--tags" "--dirty=-devel" "--abbrev=0"))))) (replace-regexp-in-string "^v" "" tag) "<unknown>"))))
+#+macro: year (eval (format-time-string "%Y"))
 #+texinfo: @noindent
 
-This manual is for Org-roam version 2.2.2.
+This manual is for Org-roam {{{version}}}.
 
 #+BEGIN_QUOTE
-Copyright (C) 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+Copyright (C) 2020-{{{year}}} Jethro Kuan <jethrokuan95@gmail.com> and the
+Org-roam contributors
 
 You can redistribute this document and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either
@@ -219,12 +221,8 @@ Org-roam library. Add the following code to your ~.emacs~:
 You now have Org-roam installed. However, you don't necessarily have the
 dependencies that it requires. These include:
 
-- dash
-- f
-- s
 - org
 - emacsql
-- emacsql-sqlite
 - magit-section
 
 You can install this manually as well, or get the latest version from MELPA. You
@@ -267,40 +265,6 @@ file:
 #+begin_src bash
 install-info /path/to/my/info/files/org-roam.info /path/to/my/info/files/dir
 #+end_src
-
-** Installation Troubleshooting
-*** C Compiler
-Org-roam relies on an Emacs package called ~emacsql~ and ~emacsql-sqlite~ to
-work with the ~sqlite~ database. Both of them should be installed automatically
-in your Emacs environment as a prerequisite for Org-roam when you install it.
-
-~emacsql-sqlite~ requires a C compiler (e.g. ~gcc~ or ~clang~) to be present in
-your computer. How to install a C compiler depends on the OS that you use.
-
-**** C Compiler for Windows
-
-One of the easiest ways to install a C compiler in Windows is to use [[https://www.msys2.org/][MSYS2]] as at the time of this writing:
-
-1. Download and use the installer in the official MSYS2 website
-2. Run MSYS2 and in its terminal, type the following and answer "Y" to
-   proceed -- this will install ~gcc~ in your PC:
-
-   #+BEGIN_SRC bash
-     pacman -S gcc
-   #+END_SRC
-
-4. On Windows, add ~C:\msys64\usr\bin~ (command =where gcc= in MSYS2 terminal
-   can tell you the correct path) to ~PATH~ in your environmental variables
-
-5. Launch Emacs and call ~M-x org-roam-db-autosync-mode~ (launch Emacs after
-   defining the path, so that Emacs can recognize it)
-
-This will automatically start compiling ~emacsql-sqlite~; you should see a
-message in minibuffer. It may take a while until compilation completes. Once
-complete, you should see a new file ~emacsql-sqlite.exe~ created in a subfolder
-named ~sqlite~ under ~emacsql-sqlite~ installation folder. It's typically in
-your Emacs configuration folder like this:
-~/.config/emacs/elpa/emacsql-sqlite-20190727.1710/sqlite~
 
 * Getting Started
 ** The Org-roam Node
@@ -413,7 +377,7 @@ Node selection is achieved via the ~completing-read~ interface, typically
 through ~org-roam-node-read~. The presentation of these nodes are governed by
 ~org-roam-node-display-template~.
 
-- Variable: org-roam-node-display-template
+- Variable: org-roam-node-display-template ::
 
   Configures display formatting for Org-roam node.
 
@@ -457,55 +421,8 @@ can set ~org-roam-node-display-template~ as such:
 
 * Customizing Node Caching
 ** How to cache
-
-Org-roam uses a sqlite database to perform caching, but there are multiple Emacs
-libraries that can be used. The default used by Org-roam is ~emacs-sqlite~.
-Below the pros and cons of each package is used:
-
-[[https://github.com/skeeto/emacsql][**emacs-sqlite**]]
-
-The default option used by Org-roam. This library is the most mature and
-well-supported and is imported by default in Org-roam.
-
-One downside of using ~emacs-sqlite~ is that using it requires compilation and
-can cause issues in some environments (especially Windows). If you have issues
-producing the customized binary required by ~emacs-sqlite~, consider using
-~emacs-sqlite3~.
-
-[[https://github.com/cireu/emacsql-sqlite3][**emacs-sqlite3**]]
-
-~emacs-sqlite3~ uses the official sqlite3 binary that can be obtained from your
-system's package manager. This is useful if you have issues producing the
-~sqlite3~ binary required by the other packages. However, it is not recommended
-because it has some compatibility issues with Emacs, but should work for most
-regular cases. See [[https://nullprogram.com/blog/2014/02/06/][Chris Wellon's blog post]] for more information.
-
-To use ~emacsql-sqlite3~, ensure that the package is installed, and set:
-
-#+begin_src emacs-lisp
-  (setq org-roam-database-connector 'sqlite3)
-#+end_src
-
-[[https://melpa.org/#/emacsql-sqlite-module][**emacssql-sqlite-module**]] (previously emacsql-libsqlite3)
-
-~emacs-sqlite-module~ is a relatively young package which uses an Emacs module that
-exposes parts of the SQLite C API to Emacs Lisp, instead of using subprocess as
-~emacsql-sqlite~ does. It is expected to be a more performant drop-in
-replacement for ~emacs-sqlite~.
-
-#+begin_src emacs-lisp
-  (setq org-roam-database-connector 'sqlite-module)
-#+end_src
-
-[[https://melpa.org/#/emacsql-sqlite-builtin][**emacsql-sqlite-builtin**]]
-
-~emacsql-sqlite-builtin~ uses the in-built SQLite support for Emacs 29 and
-later. This is the recommended option if you are using a version of Emacs that
-supports it.
-
-#+begin_src emacs-lisp
-  (setq org-roam-database-connector 'sqlite-builtin)
-#+end_src
+Org-roam uses a SQLite database to perform caching.  This integration is
+managed by the [[https://github.com/magit/emacsql][emacsql]] library.  It should "just work".
 
 ** What to cache
 
@@ -527,7 +444,7 @@ property to a non-nil value. For example:
 One can also set ~org-roam-db-node-include-function~. For example, to exclude
 all headlines with the ~ATTACH~ tag from the Org-roam database, one can set:
 
-#+begin_src org
+#+begin_src emacs-lisp
 (setq org-roam-db-node-include-function
       (lambda ()
         (not (member "ATTACH" (org-get-tags)))))
@@ -540,7 +457,7 @@ additionally trying to process these links. Use
 ~org-roam-db-extra-links-elements~ to specify which additional Org AST element
 types to consider.
 
-- Variable: org-roam-db-extra-links-elements
+- Variable: org-roam-db-extra-links-elements ::
 
   The list of Org element types to include for parsing by Org-roam.
 
@@ -554,7 +471,7 @@ property drawers. For example, we would not want ~ROAM_REFS~ links to be
 self-referential. Hence, to exclude specific keys, we use
 ~org-roam-db-extra-links-exclude-keys~.
 
-- Variable: org-roam-db-extra-links-exclude-keys
+- Variable: org-roam-db-extra-links-exclude-keys ::
 
   Keys to ignore when mapping over links.
 
@@ -573,7 +490,7 @@ However, depending on how large your Org files are, database updating can be a
 slow operation. You can disable the automatic updating of the database by
 setting ~org-roam-db-update-on-save~ to ~nil~.
 
-- Variable: org-roam-db-update-on-save
+- Variable: org-roam-db-update-on-save ::
 
 If t, update the Org-roam database upon saving the file. Disable this if your
 files are large and updating the database is slow.
@@ -595,14 +512,14 @@ two main commands to use here:
 To bring up a buffer that tracks the current node at point, call ~M-x
 org-roam-buffer-toggle~.
 
-- Function: org-roam-buffer-toggle
+- Function: org-roam-buffer-toggle ::
 
   Toggle display of the ~org-roam-buffer~.
 
 To bring up a buffer that's dedicated for a specific node, call ~M-x
 org-roam-buffer-display-dedicated~.
 
-- Function: org-roam-buffer-display-dedicated
+- Function: org-roam-buffer-display-dedicated ::
 
   Launch node dedicated Org-roam buffer without visiting the node itself.
 
@@ -731,12 +648,12 @@ To assign an alias to a node, add the "ROAM_ALIASES" property to the node:
 
 Alternatively, Org-roam provides some functions to add or remove aliases.
 
-- Function: org-roam-alias-add alias
+- Function: org-roam-alias-add alias ::
 
   Add ALIAS to the node at point. When called interactively, prompt for the
   alias to add.
 
-- Function: org-roam-alias-remove
+- Function: org-roam-alias-remove ::
 
   Remove an alias from the node at point.
 
@@ -778,12 +695,12 @@ key and a URL at the same time.
 
 Org-roam also provides some functions to add or remove refs.
 
-- Function: org-roam-ref-add ref
+- Function: org-roam-ref-add ref ::
 
   Add REF to the node at point. When called interactively, prompt for the
   ref to add.
 
-- Function: org-roam-ref-remove
+- Function: org-roam-ref-remove ::
 
   Remove a ref from the node at point.
 
@@ -799,9 +716,9 @@ support.
 
 ** Using the Cached Information
 
-It is common to use take reference notes for academic papers. To designate the
-node to be the canonical node for the academic paper, we can use its unique
-citation key:
+It is common to take notes on academic reference meterial. To designate a node
+as the canonical node for a particular reference, we can use its unique citation
+key:
 
 #+begin_src org
 ,* Probabilistic Robotics
@@ -862,16 +779,14 @@ Completions within link brackets are provided by
 ~org-roam-complete-link-at-point~.
 
 The completion candidates are the titles and aliases for all Org-roam nodes.
-Upon choosing a candidate, a ~roam:Title~ link will be inserted, linking to node
-of choice.
+Choosing a candidate inserts an ID link to the chosen node.
 
 ** Completing anywhere
 
 The same completions can be triggered anywhere for the symbol at point if not
 within a bracketed link. This is provided by ~org-roam-complete-everywhere~.
 Similarly, the completion candidates are the titles and aliases for all Org-roam
-nodes, and upon choosing a candidate a ~roam:Title~ link will be inserted
-linking to the node of choice.
+nodes, and choosing a candidate inserts an ID link to the chosen node.
 
 This is disabled by default. To enable it, set ~org-roam-completion-everywhere~
 to ~t~:
@@ -880,7 +795,7 @@ to ~t~:
 (setq org-roam-completion-everywhere t)
 #+end_src
 
-- Variable: org-roam-completion-everywhere
+- Variable: org-roam-completion-everywhere ::
 
 When non-nil, provide link completion matching outside of Org links.
 
@@ -936,7 +851,8 @@ of the template are similar to ~org-capture~ templates.
    This template means don't insert any content, but place the cursor here.
 6. ~:target~ is a compulsory specification in the Org-roam capture template. The
    first element of the list indicates the type of the target, the second
-   element indicates the location of the captured node, and the rest of the
+   element indicates the location of the captured node (note the target location
+   undergoes Org template expansion like the body elements), and the rest of the
    elements indicate prefilled template that will be inserted and the position
    of the point will be adjusted for. The latter behavior varies from type to
    type of the capture target.
@@ -1110,14 +1026,14 @@ If you're using the [[https://formulae.brew.sh/formula/emacs][Emacs Homebrew for
 
 a) Add option `-c` to `emacsclient` in the script, and start emacs from command line with `emacs --daemon`
 
-#+begin_src emacs-lisp
+  #+begin_src emacs-lisp
   on open location this_URL
       set EC to "/usr/local/bin/emacsclient -c --no-wait "
       set filePath to quoted form of this_URL
       do shell script EC & filePath & " &> /dev/null &"
       tell application "Emacs" to activate
   end open location
-#+end_src
+  #+end_src
 
 b) Add `(server-start)` in .emacs (in this case you do not need option `-c` for `emacsclient` in the script, and you do not need to start emacs with `emacs --daemon`
 
@@ -1211,7 +1127,7 @@ generating images using [[https://graphviz.org/][Graphviz]]. The graph can also 
 
 The entry point to graph creation is ~org-roam-graph~.
 
-- Function: org-roam-graph & optional arg node
+- Function: org-roam-graph & optional arg node ::
 
 Build and display a graph for NODE.
 ARG may be any of the following values:
@@ -1220,7 +1136,7 @@ ARG may be any of the following values:
   - ~integer~   an integer argument ~N~ will show the graph for the connected
                 components to node up to ~N~ steps away.
 
-- User Option: org-roam-graph-executable
+- User Option: org-roam-graph-executable ::
 
   Path to the graphing executable (in this case, Graphviz). Set this if Org-roam
   is unable to find the Graphviz executable on your system.
@@ -1228,7 +1144,7 @@ ARG may be any of the following values:
   You may also choose to use ~neato~ in place of ~dot~, which generates a more
   compact graph layout.
 
-- User Option: org-roam-graph-viewer
+- User Option: org-roam-graph-viewer ::
 
   Org-roam defaults to using Firefox (located on PATH) to view the SVG, but you
   may choose to set it to:
@@ -1254,22 +1170,22 @@ Graphviz provides many options for customizing the graph output, and Org-roam
 supports some of them. See https://graphviz.gitlab.io/_pages/doc/info/attrs.html
 for customizable options.
 
-- User Option: org-roam-graph-filetype
+- User Option: org-roam-graph-filetype ::
 
   The file type to generate for graphs. This defaults to ~"svg"~.
 
-- User Option: org-roam-graph-extra-config
+- User Option: org-roam-graph-extra-config ::
 
   Extra options passed to graphviz for the digraph (The "G" attributes).
   Example: ~'~(("rankdir" . "LR"))~
 
-- User Option: org-roam-graph-node-extra-config
+- User Option: org-roam-graph-node-extra-config ::
 
   An alist of options to style the nodes.
   The car of the alist node type such as ~"id"~, or ~"http"~. The cdr of the
   list is another alist of Graphviz node options (the "N" attributes).
 
-- User Option: org-roam-graph-edge-extra-config
+- User Option: org-roam-graph-edge-extra-config ::
 
   Extra options for edges in the graphviz output (The "E" attributes).
   Example: ~'(("dir" . "back"))~
@@ -1283,11 +1199,11 @@ Org-journal with ~org-roam-dailies~.
 
 For ~org-roam-dailies~ to work, you need to define two variables:
 
-- Variable: ~org-roam-dailies-directory~
+- Variable: org-roam-dailies-directory ::
 
   Path to daily-notes. This path is relative to ~org-roam-directory~.
 
-- Variable: ~org-roam-dailies-capture-templates~
+- Variable: org-roam-dailies-capture-templates ::
 
   Capture templates for daily-notes in Org-roam.
 
@@ -1309,31 +1225,31 @@ See [[*The Templating System][The Templating System]] for creating new templates
 
 ~org-roam-dailies~ provides these interactive functions:
 
-- Function: ~org-roam-dailies-capture-today~ &optional goto
+- Function: org-roam-dailies-capture-today &optional goto ::
 
   Create an entry in the daily note for today.
 
   When ~goto~ is non-nil, go to the note without creating an entry.
 
-- Function: ~org-roam-dailies-goto-today~
+- Function: org-roam-dailies-goto-today ::
 
   Find the daily note for today, creating it if necessary.
 
 There are variants of those commands for ~-yesterday~ and ~-tomorrow~:
 
-- Function: ~org-roam-dailies-capture-yesterday~ n &optional goto
+- Function: org-roam-dailies-capture-yesterday n &optional goto ::
 
   Create an entry in the daily note for yesterday.
 
   With numeric argument ~n~, use the daily note ~n~ days in the past.
 
-- Function: ~org-roam-dailies-goto-yesterday~
+- Function: org-roam-dailies-goto-yesterday ::
 
   With numeric argument N, use the daily-note N days in the future.
 
 There are also commands which allow you to use Emacs’s ~calendar~ to find the date
 
-- Function: ~org-roam-dailies-capture-date~
+- Function: org-roam-dailies-capture-date ::
 
   Create an entry in the daily note for a date using the calendar.
 
@@ -1342,21 +1258,21 @@ There are also commands which allow you to use Emacs’s ~calendar~ to find the 
   With a 'C-u' prefix or when ~goto~ is non-nil, go the note without
   creating an entry.
 
-- Function: ~org-roam-dailies-goto-date~
+- Function: org-roam-dailies-goto-date ::
 
   Find the daily note for a date using the calendar, creating it if necessary.
 
   Prefer past dates, unless ~prefer-future~ is non-nil.
 
-- Function: ~org-roam-dailies-find-directory~
+- Function: org-roam-dailies-find-directory ::
 
   Find and open ~org-roam-dailies-directory~.
 
-- Function: ~org-roam-dailies-goto-previous-note~
+- Function: org-roam-dailies-goto-previous-note ::
 
   When in an daily-note, find the previous one.
 
-- Function: ~org-roam-dailies-goto-next-note~
+- Function: org-roam-dailies-goto-next-note ::
 
   When in an daily-note, find the next one.
 ** org-roam-export
@@ -1672,21 +1588,6 @@ to the publishing directory.  Example code follows:
                                          (kill-buffer (file-name-nondirectory svg))
                                          (setq my-publish-time 0)))))
 #+end_src
-** I'm seeing this "Selecting deleted buffer" error. What do I do?
-
-The "selecting deleted buffer" error usually occurs when you don't have a
-working ~emacsql-sqlite~ executable. Org-roam relies on this executable to
-function properly, and doesn't catch this error. This issue is most commonly
-seen on Windows setups. You can browse through the various GitHub issues posted
-about this [[https://github.com/org-roam/org-roam/issues?q=is%3Aissue+selecting+deleted][here]].
-
-To fix this, you can try the following:
-
-1. If on Windows, try replacing your system binary with [[https://github.com/nobiot/emacsql-sqlite.exe][this one]] that has been proven
-   to work
-2. Use the ~emacsql-sqlite3~ option rather than compiling your own emacsql
-   binary (see [[*How to cache][How to cache]]).
-
 * Developer's Guide to Org-roam
 ** Org-roam's Design Principle
 
@@ -1761,13 +1662,12 @@ that extensions/customizations are robust to change, extensions should only use
 The node interface is cleanly defined using ~cl-defstruct~. The primary
 method to access nodes is ~org-roam-node-at-point~ and ~org-roam-node-read~:
 
-- Function: org-roam-node-at-point &optional assert
+- Function: org-roam-node-at-point &optional assert ::
 
   Return the node at point. If ASSERT, throw an error if there is no node at
   point.
 
-- Function: org-roam-node-read &optional initial-input filter-fn sort-fn
-  require-match
+- Function: org-roam-node-read &optional initial-input filter-fn sort-fn require-match ::
 
   Read and return an `org-roam-node'.
   INITIAL-INPUT is the initial minibuffer prompt value. FILTER-FN
@@ -1802,7 +1702,7 @@ Org-roam applies some patching over Org's capture system to smooth out the user
 experience, and sometimes it is desirable to use Org-roam's capturing system
 instead. The exposed function to be used in extensions is ~org-roam-capture-~:
 
-- Function: org-roam-capture- &key goto keys node info props templates
+- Function: org-roam-capture- &key goto keys node info props templates ::
 
   Main entry point.
   GOTO and KEYS correspond to `org-capture' arguments.
@@ -1832,7 +1732,8 @@ When GOTO is non-nil, go the note without creating an entry."
 :END:
 
 #+BEGIN_QUOTE
-Copyright (C) 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+Copyright (C) 2020-{{{year}}} Jethro Kuan <jethrokuan95@gmail.com> and the
+Org-roam contributors
 
 You can redistribute this document and/or modify it under the terms
 of the GNU General Public License as published by the Free Software
@@ -1893,9 +1794,9 @@ an Org file code block (like =#+BEGIN_SRC emacs-lisp=).
 
 # Local Variables:
 # eval: (require 'ol-info)
-# eval: (require 'ox-texinfo+ nil t)
 # eval: (auto-fill-mode +1)
-# after-save-hook: (lambda nil (progn (require 'ox-texinfo nil t) (org-texinfo-export-to-info)))
+# after-save-hook: org-texinfo-export-to-info
 # indent-tabs-mode: nil
 # org-src-preserve-indentation: nil
+# org-list-allow-alphabetical: t
 # End:

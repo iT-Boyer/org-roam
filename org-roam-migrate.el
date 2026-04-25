@@ -1,12 +1,6 @@
 ;;; org-roam-migrate.el --- Migration utilities from v1 to v2 -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
-
-;; Author: Jethro Kuan <jethrokuan95@gmail.com>
-;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (org "9.4") (emacsql "4.0.0") (magit-section "3.0.0"))
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -157,9 +151,9 @@ If the property is already set, replace its value."
              (desc (match-string 2)))
         (when (string-prefix-p "file:" path)
           (setq path (expand-file-name (substring path 5)))
-          (when-let ((node-id (caar (org-roam-db-query [:select [id] :from nodes
-                                                        :where (= file $s1)
-                                                        :and (= level 0)] path))))
+          (when-let* ((node-id (caar (org-roam-db-query [:select [id] :from nodes
+                                                         :where (= file $s1)
+                                                         :and (= level 0)] path))))
             (set-match-data mdata)
             (replace-match (org-link-make-string (concat "id:" node-id)
                                                  desc) nil t)))))))

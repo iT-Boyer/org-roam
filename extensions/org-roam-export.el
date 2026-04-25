@@ -1,12 +1,9 @@
 ;;; org-roam-export.el --- Org-roam org-export tweaks -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; Author: Jethro Kuan <jethrokuan95@gmail.com>
 ;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (org "9.4") (org-roam "2.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -53,7 +50,7 @@ See `org-html--reference' for DATUM, INFO and NAMED-ONLY."
            datum))
          (user-label
           (or user-label
-              (when-let ((path (org-element-property :ID datum)))
+              (when-let* ((path (org-element-property :ID datum)))
                 ;; see `org-html-link' for why we use "ID-"
                 ;; (search for "ID-" in ox-html.el)
                 (concat "ID-" path)))))

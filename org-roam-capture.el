@@ -1,12 +1,6 @@
 ;;; org-roam-capture.el --- Capture functionality -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
-
-;; Author: Jethro Kuan <jethrokuan95@gmail.com>
-;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (org "9.4") (emacsql "4.0.0") (magit-section "3.0.0"))
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -432,8 +426,7 @@ The INFO, if provided, is passed along to the underlying `org-roam-capture-'."
                        :info info
                        :keys keys
                        :templates templates
-                       :node node
-                       :props '(:immediate-finish nil))))
+                       :node node)))
 
 ;;; Capture process
 (defun org-roam-capture-p ()
@@ -574,7 +567,7 @@ Return the ID of the location."
     ;; caller.
     (save-excursion
       (goto-char p)
-      (if-let ((id (org-entry-get p "ID")))
+      (if-let* ((id (org-entry-get p "ID")))
           (setf (org-roam-node-id org-roam-capture--node) id)
         (org-entry-put p "ID" (org-roam-node-id org-roam-capture--node)))
       (prog1
@@ -684,9 +677,9 @@ the current value of `point'."
 (add-hook 'org-roam-capture-preface-hook #'org-roam-capture--try-capture-to-ref-h)
 (defun org-roam-capture--try-capture-to-ref-h ()
   "Try to capture to an existing node that match the ref."
-  (when-let ((node (and (plist-get org-roam-capture--info :ref)
-                        (org-roam-node-from-ref
-                         (plist-get org-roam-capture--info :ref)))))
+  (when-let* ((node (and (plist-get org-roam-capture--info :ref)
+                         (org-roam-node-from-ref
+                          (plist-get org-roam-capture--info :ref)))))
     (set-buffer (org-capture-target-buffer (org-roam-node-file node)))
     (goto-char (org-roam-node-point node))
     (widen)
@@ -695,7 +688,7 @@ the current value of `point'."
 (add-hook 'org-roam-capture-new-node-hook #'org-roam-capture--insert-captured-ref-h)
 (defun org-roam-capture--insert-captured-ref-h ()
   "Insert the ref if any."
-  (when-let ((ref (plist-get org-roam-capture--info :ref)))
+  (when-let* ((ref (plist-get org-roam-capture--info :ref)))
     (org-roam-ref-add ref)))
 
 ;;;; Finalizers
@@ -708,8 +701,8 @@ the current value of `point'."
 (defun org-roam-capture--finalize ()
   "Finalize the `org-roam-capture' process."
   (if org-note-abort
-      (when-let ((new-file (org-roam-capture--get :new-file))
-                 (_ (yes-or-no-p "Delete file for aborted capture?")))
+      (when-let* ((new-file (org-roam-capture--get :new-file))
+                  (_ (yes-or-no-p "Delete file for aborted capture?")))
         (when (find-buffer-visiting new-file)
           (kill-buffer (find-buffer-visiting new-file)))
         (delete-file new-file))
@@ -737,7 +730,7 @@ This function is to be called in the Org-capture finalization process."
   (when-let* ((mkr (org-roam-capture--get :call-location))
               (buf (marker-buffer mkr)))
     (with-current-buffer buf
-      (when-let ((region (org-roam-capture--get :region)))
+      (when-let* ((region (org-roam-capture--get :region)))
         (delete-region (car region) (cdr region))
         (set-marker (car region) nil)
         (set-marker (cdr region) nil))

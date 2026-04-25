@@ -94,8 +94,8 @@ next sample will get you there:
 <summary>Toggle instructions</summary>
 
 Doom's `:lang org` module comes with support for `org-roam`, but it's not
-enabled by default. To activate it pass `+roam2` flag to `org` module in your
-`$DOOMDIR/init.el` (e.g. `(org +roam2)`), save the file and run `doom sync -u`
+enabled by default. To activate it pass `+roam` flag to `org` module in your
+`$DOOMDIR/init.el` (e.g. `(org +roam)`), save the file and run `doom sync -u`
 in your shell.
 
 To provide better stability, Doom pins the package to a specific commit. If you
@@ -150,14 +150,9 @@ options:
 In both of the cases you will need to ensure that you have all the required
 dependencies. These include:
 
-- dash
-- f
-- s
-- org (9.4 is the minimal required version!)
+- org (9.6 is the minimum required version!)
 - emacsql
-- emacsql-sqlite
 - magit-section
-- filenotify-recursive
 
 After installing the package, you will need to properly setup `load-path` to the
 package:

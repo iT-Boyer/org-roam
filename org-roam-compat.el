@@ -1,12 +1,6 @@
 ;;; org-roam-compat.el --- Backward compatibility code -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
-
-;; Author: Jethro Kuan <jethrokuan95@gmail.com>
-;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1"))
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -163,7 +157,7 @@ nodes." org-id-locations-file)
     (advice-add 'org-roam-capture--get-target :around #'org-roam-capture--get-if-new-target-a)
     (defun org-roam-capture--get-if-new-target-a (fn &rest args)
       "Get the current capture target using deprecated :if-new property."
-      (if-let ((target (org-roam-capture--get :if-new)))
+      (if-let* ((target (org-roam-capture--get :if-new)))
           (prog1 target
             (unless inhibit-warning-p
               (lwarn 'org-roam-capture :warning
@@ -233,8 +227,33 @@ nodes." org-id-locations-file)
   'org-roam-mode-section-functions
   'org-roam-mode-sections "org-roam 2.2.0")
 
+(define-obsolete-function-alias
+  'org-roam-dolist-with-progress
+  'dolist-with-progress-reporter "2025-11-07")
+
 ;;; Obsolete functions
 (make-obsolete 'org-roam-get-keyword 'org-collect-keywords "org-roam 2.0")
+
+;;;###autoload
+(defun org-roam-db-autosync-enable ()
+  "Activate `org-roam-db-autosync-mode'."
+  (declare (obsolete org-roam-db-autosync-mode "2025-11-23"))
+  (org-roam-db-autosync-mode +1))
+
+(defun org-roam-db-autosync-disable ()
+  "Deactivate `org-roam-db-autosync-mode'."
+  (declare (obsolete org-roam-db-autosync-mode "2025-11-23"))
+  (org-roam-db-autosync-mode -1))
+
+(defun org-roam-db-autosync-toggle ()
+  "Toggle `org-roam-db-autosync-mode' enabled/disabled."
+  (declare (obsolete org-roam-db-autosync-mode "2025-11-23"))
+  (org-roam-db-autosync-mode 'toggle))
+
+(defun org-roam-buffer-list ()
+  "Return a list of buffers that are Org-roam files."
+  (declare (obsolete nil "2026-02-08"))
+  (seq-filter #'org-roam-buffer-p (buffer-list)))
 
 (provide 'org-roam-compat)
 

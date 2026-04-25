@@ -1,14 +1,11 @@
 ;;; org-roam-dailies.el --- Daily-notes for Org-roam -*- coding: utf-8; lexical-binding: t; -*-
-;;;
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
+
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 ;; Copyright © 2020 Leo Vivier <leo.vivier+dev@gmail.com>
 
 ;; Author: Jethro Kuan <jethrokuan95@gmail.com>
 ;;      Leo Vivier <leo.vivier+dev@gmail.com>
 ;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (org-roam "2.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -37,7 +34,6 @@
 ;; scratch notes or whatever else you can think of.
 ;;
 ;;; Code:
-(require 'dash)
 (require 'org-roam)
 
 ;;; Faces
@@ -269,22 +265,22 @@ negative, find note N days in the future."
   "List all files in `org-roam-dailies-directory'.
 EXTRA-FILES can be used to append extra files to the list."
   (let ((dir (expand-file-name org-roam-dailies-directory org-roam-directory))
-        (regexp (rx-to-string `(and "." (or ,@org-roam-file-extensions)))))
-    (append (--remove (let ((file (file-name-nondirectory it)))
-                        (when (or (auto-save-file-name-p file)
-                                  (backup-file-name-p file)
-                                  (string-match "^\\." file))
-                          it))
-                      (directory-files-recursively dir regexp))
+        (regexp (rx-to-string `(seq (literal ".") (or ,@org-roam-file-extensions) eos))))
+    (append (seq-remove (lambda (file)
+                          (let ((name (file-name-nondirectory file)))
+                            (or (auto-save-file-name-p name)
+                                (backup-file-name-p name)
+                                (string-match "^\\." name))))
+                        (directory-files-recursively dir regexp))
             extra-files)))
 
 (defun org-roam-dailies--daily-note-p (&optional file)
   "Return t if FILE is an Org-roam daily-note, nil otherwise.
 If FILE is not specified, use the current buffer's file-path."
-  (when-let ((path (expand-file-name
-                    (or file
-                        (buffer-file-name (buffer-base-buffer)))))
-             (directory (expand-file-name org-roam-dailies-directory org-roam-directory)))
+  (when-let* ((path (expand-file-name
+                     (or file
+                         (buffer-file-name (buffer-base-buffer)))))
+              (directory (expand-file-name org-roam-dailies-directory org-roam-directory)))
     (setq path (expand-file-name path))
     (save-match-data
       (and
@@ -339,11 +335,12 @@ In this case, interactive selection will be bypassed."
   (when goto (run-hooks 'org-roam-dailies-find-file-hook)))
 
 (add-hook 'org-roam-capture-preface-hook #'org-roam-dailies--override-capture-time-h)
+
 (defun org-roam-dailies--override-capture-time-h ()
   "Override the `:default-time' with the time from `:override-default-time'."
-  (prog1 nil
-    (when (org-roam-capture--get :override-default-time)
-      (org-capture-put :default-time (org-roam-capture--get :override-default-time)))))
+  (when (org-roam-capture--get :override-default-time)
+    (org-capture-put :default-time (org-roam-capture--get :override-default-time)))
+  nil)
 
 ;;; Bindings
 (defvar org-roam-dailies-map (make-sparse-keymap)

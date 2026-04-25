@@ -1,12 +1,6 @@
 ;;; org-roam-mode.el --- Major mode for special Org-roam buffers -*- lexical-binding: t -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
-
-;; Author: Jethro Kuan <jethrokuan95@gmail.com>
-;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (org "9.4") (emacsql "4.0.0") (magit-section "3.0.0"))
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -185,7 +179,9 @@ information in a section-like manner (see
 `org-roam-mode-sections'), with which the user can
 interact with."
   :group 'org-roam
-  (face-remap-add-relative 'header-line 'org-roam-header-line))
+  (face-remap-add-relative 'header-line 'org-roam-header-line)
+  ;; https://github.com/meedstrom/org-node/issues/149
+  (setq-local font-lock-defaults nil))
 
 ;;; Buffers
 (defvar org-roam-buffer-current-node nil
@@ -214,11 +210,11 @@ which visits the thing at point."
 (defun org-roam-buffer-file-at-point (&optional assert)
   "Return the file at point in the current `org-roam-mode' based buffer.
 If ASSERT, throw an error."
-  (if-let ((file (magit-section-case
-                   (org-roam-node-section (org-roam-node-file (oref it node)))
-                   (org-roam-grep-section (oref it file))
-                   (org-roam-preview-section (oref it file))
-                   (t (cl-assert (derived-mode-p 'org-roam-mode))))))
+  (if-let* ((file (magit-section-case
+                    (org-roam-node-section (org-roam-node-file (oref it node)))
+                    (org-roam-grep-section (oref it file))
+                    (org-roam-preview-section (oref it file))
+                    (t (cl-assert (derived-mode-p 'org-roam-mode))))))
       file
     (when assert
       (user-error "No file at point"))))
@@ -319,7 +315,7 @@ To toggle its display use `org-roam-buffer-toggle' command.")
 
 (define-inline org-roam-buffer--visibility ()
   "Return the current visibility state of the persistent `org-roam-buffer'.
-Valid states are 'visible, 'exists and 'none."
+Valid states are `visible', `exists' and `none'."
   (declare (side-effect-free t))
   (inline-quote
    (cond
@@ -330,7 +326,7 @@ Valid states are 'visible, 'exists and 'none."
 (defun org-roam-buffer-persistent-redisplay ()
   "Recompute contents of the persistent `org-roam-buffer'.
 Has no effect when there's no `org-roam-node-at-point'."
-  (when-let ((node (org-roam-node-at-point)))
+  (when-let* ((node (org-roam-node-at-point)))
     (unless (equal node org-roam-buffer-current-node)
       (setq org-roam-buffer-current-node node
             org-roam-buffer-current-directory org-roam-directory)
@@ -352,7 +348,7 @@ Has no effect when there's no `org-roam-node-at-point'."
   "Reconstruct the persistent `org-roam-buffer'.
 This needs to be quick or infrequent, because this designed to
 run at `post-command-hook'."
-  (and (get-buffer-window org-roam-buffer)
+  (and (get-buffer-window org-roam-buffer 'visible)
        (org-roam-buffer-persistent-redisplay)))
 
 ;;; Sections
@@ -393,7 +389,7 @@ the same time:
    other node) at POINT. Acts a child section of the previous
    one."
   (magit-insert-section section (org-roam-node-section)
-    (let ((outline (if-let ((outline (plist-get properties :outline)))
+    (let ((outline (if-let* ((outline (plist-get properties :outline)))
                        (mapconcat #'org-link-display-format outline " > ")
                      "Top")))
       (insert (concat (propertize (org-roam-node-title source-node)
@@ -441,7 +437,7 @@ In interactive calls OTHER-WINDOW is set with
     (with-current-buffer buf
       (widen)
       (goto-char point))
-    (when (org-invisible-p) (org-show-context))
+    (when (org-invisible-p) (org-fold-show-context))
     buf))
 
 (defun org-roam-preview-default-function ()
@@ -525,7 +521,7 @@ When SHOW-BACKLINK-P is not null, only show backlinks for which
 this predicate is not nil.
 
 SECTION-HEADING is the string used as a heading for the backlink section."
-  (when-let ((backlinks (seq-sort #'org-roam-backlinks-sort (org-roam-backlinks-get node :unique unique))))
+  (when-let* ((backlinks (seq-sort #'org-roam-backlinks-sort (org-roam-backlinks-get node :unique unique))))
     (magit-insert-section (org-roam-backlinks)
       (magit-insert-heading section-heading)
       (dolist (backlink backlinks)
@@ -583,8 +579,8 @@ Sorts by title."
 
 (defun org-roam-reflinks-section (node)
   "The reflinks section for NODE."
-  (when-let ((refs (org-roam-node-refs node))
-             (reflinks (seq-sort #'org-roam-reflinks-sort (org-roam-reflinks-get node))))
+  (when-let* ((refs (org-roam-node-refs node))
+              (reflinks (seq-sort #'org-roam-reflinks-sort (org-roam-reflinks-get node))))
     (magit-insert-section (org-roam-reflinks)
       (magit-insert-heading "Reflinks:")
       (dolist (reflink reflinks)
@@ -630,7 +626,7 @@ instead."
         (forward-line (1- row)))
       (when col
         (forward-char (1- col))))
-    (when (org-invisible-p) (org-show-context))
+    (when (org-invisible-p) (org-fold-show-context))
     buf))
 
 ;;;; Unlinked references
@@ -658,17 +654,26 @@ This is the ROW within FILE."
        (end-of-line)
        (point)))))
 
-(defun org-roam-unlinked-references--rg-command (titles)
-  "Return the ripgrep command searching for TITLES."
+(defun org-roam-unlinked-references--rg-command (titles temp-file)
+  "Return the ripgrep command searching for TITLES using TEMP-FILE for pattern.
+This avoids shell escaping issues by writing the pattern to a file instead
+of passing it directly through the shell command line."
+  ;; Write pattern to temp file to avoid shell escaping issues with quotes,
+  ;; spaces, and other special characters in titles
+  (with-temp-file temp-file
+    (insert "\\[([^[]]++|(?R))*\\]"
+            (mapconcat (lambda (title)
+                         ;; Use regexp-quote instead of shell-quote-argument
+                         ;; since we're writing a regex pattern, not a shell argument
+                         (format "|(\\b%s\\b)" (regexp-quote title)))
+                       titles "")))
+
   (concat "rg --follow --only-matching --vimgrep --pcre2 --ignore-case "
           (mapconcat (lambda (glob) (concat "--glob " glob))
                      (org-roam--list-files-search-globs org-roam-file-extensions)
                      " ")
-          (format " '\\[([^[]]++|(?R))*\\]%s' "
-                  (mapconcat (lambda (title)
-                               (format "|(\\b%s\\b)" (shell-quote-argument title)))
-                             titles ""))
-          (shell-quote-argument org-roam-directory)))
+          " --file " (shell-quote-argument temp-file) " "
+          (shell-quote-argument (expand-file-name org-roam-directory))))
 
 (defun org-roam-unlinked-references-section (node)
   "The unlinked references section for NODE.
@@ -679,33 +684,39 @@ References from FILE are excluded."
                                 (shell-command-to-string "rg --pcre2-version"))))
     (let* ((titles (cons (org-roam-node-title node)
                          (org-roam-node-aliases node)))
-           (rg-command (org-roam-unlinked-references--rg-command titles))
-           (results (split-string (shell-command-to-string rg-command) "\n"))
-           f row col match)
-      (magit-insert-section (unlinked-references)
-        (magit-insert-heading "Unlinked References:")
-        (dolist (line results)
-          (save-match-data
-            (when (string-match org-roam-unlinked-references-result-re line)
-              (setq f (match-string 1 line)
-                    row (string-to-number (match-string 2 line))
-                    col (string-to-number (match-string 3 line))
-                    match (match-string 4 line))
-              (when (and match
-                         (not (file-equal-p (org-roam-node-file node) f))
-                         (member (downcase match) (mapcar #'downcase titles)))
-                (magit-insert-section section (org-roam-grep-section)
-                  (oset section file f)
-                  (oset section row row)
-                  (oset section col col)
-                  (insert (propertize (format "%s:%s:%s"
-                                              (truncate-string-to-width (file-name-base f) 15 nil nil t)
-                                              row col) 'font-lock-face 'org-roam-dim)
-                          " "
-                          (org-roam-fontify-like-in-org-mode
-                           (org-roam-unlinked-references-preview-line f row))
-                          "\n"))))))
-        (insert ?\n)))))
+           ;; Create temp file for the regex pattern
+           (temp-file (make-temp-file "org-roam-rg-pattern-"))
+           (rg-command (org-roam-unlinked-references--rg-command titles temp-file)))
+      ;; Use unwind-protect to ensure temp file cleanup even if errors occur
+      (unwind-protect
+          (let* ((results (split-string (shell-command-to-string rg-command) "\n"))
+                 f row col match)
+            (magit-insert-section (unlinked-references)
+              (magit-insert-heading "Unlinked References:")
+              (dolist (line results)
+                (save-match-data
+                  (when (string-match org-roam-unlinked-references-result-re line)
+                    (setq f (match-string 1 line)
+                          row (string-to-number (match-string 2 line))
+                          col (string-to-number (match-string 3 line))
+                          match (match-string 4 line))
+                    (when (and match
+                               (not (file-equal-p (org-roam-node-file node) f))
+                               (member (downcase match) (mapcar #'downcase titles)))
+                      (magit-insert-section section (org-roam-grep-section)
+                        (oset section file f)
+                        (oset section row row)
+                        (oset section col col)
+                        (insert (propertize (format "%s:%s:%s"
+                                                    (truncate-string-to-width (file-name-base f) 15 nil nil t)
+                                                    row col) 'font-lock-face 'org-roam-dim)
+                                " "
+                                (org-roam-fontify-like-in-org-mode
+                                 (org-roam-unlinked-references-preview-line f row))
+                                "\n"))))))
+              (insert ?\n)))
+        ;; Clean up temp file - this runs even if an error occurs above
+        (delete-file temp-file)))))
 
 (provide 'org-roam-mode)
 ;;; org-roam-mode.el ends here

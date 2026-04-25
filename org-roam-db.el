@@ -1,12 +1,6 @@
 ;;; org-roam-db.el --- Org-roam database API -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2020-2022 Jethro Kuan <jethrokuan95@gmail.com>
-
-;; Author: Jethro Kuan <jethrokuan95@gmail.com>
-;; URL: https://github.com/org-roam/org-roam
-;; Keywords: org-mode, roam, convenience
-;; Version: 2.2.2
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (org "9.4") (emacsql "4.0.0") (magit-section "3.0.0"))
+;; Copyright © 2020-2025 Jethro Kuan <jethrokuan95@gmail.com>
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -36,43 +30,6 @@
 (defvar org-outline-path-cache)
 
 ;;; Options
-(defcustom org-roam-database-connector (if (and (progn
-                                                  (require 'emacsql-sqlite-builtin nil t)
-                                                  (functionp 'emacsql-sqlite-builtin))
-                                                (functionp 'sqlite-open))
-                                           'sqlite-builtin
-                                         'sqlite)
-  "The database connector used by Org-roam.
-This must be set before `org-roam' is loaded.  To use an alternative
-connector you must install the respective package explicitly.
-The default is `sqlite', which uses the `emacsql-sqlite' library
-that is being maintained in the same repository as `emacsql'
-itself.
-If you are using Emacs 29, then the recommended connector is
-`sqlite-builtin', which uses the new builtin support for SQLite.
-You need to install the `emacsql-sqlite-builtin' package to use
-this connector.
-If you are using an older Emacs release, then the recommended
-connector is `sqlite-module', which uses the module provided by
-the `sqlite3' package.  This is very similar to the previous
-connector and the built-in support in Emacs 29 derives from this
-module.  You need to install the `emacsql-sqlite-module' package
-to use this connector.
-For the time being `libsqlite3' is still supported.  Do not use
-this, it is an older version of the `sqlite-module' connector
-from before the connector and the package were renamed.
-For the time being `sqlite3' is also supported.  Do not use this.
-This uses the third-party `emacsql-sqlite3' package, which uses
-the official `sqlite3' cli tool, which is not intended
-to be used like this.  See https://nullprogram.com/blog/2014/02/06/."
-  :package-version '(forge . "0.3.0")
-  :group 'org-roam
-  :type '(choice (const sqlite)
-                 (const sqlite-builtin)
-                 (const sqlite-module)
-                 (const :tag "libsqlite3 (OBSOLETE)" libsqlite3)
-                 (const :tag "sqlite3 (BROKEN)" sqlite3)))
-
 (defcustom org-roam-db-location (locate-user-emacs-file "org-roam.db")
   "The path to file where the Org-roam database is stored.
 
@@ -126,8 +83,9 @@ is desirable to parse and cache these links (e.g. hiding links in
 a property drawer)."
   :package-version '(org-roam . "2.2.0")
   :group 'org-roam
-  :type '(set (const :tag "keywords" keyword)
-              (const :tag "property drawers" node-property)))
+  :type '(set
+          (const :tag "keywords" keyword)
+          (const :tag "property drawers" node-property)))
 
 (defcustom org-roam-db-extra-links-exclude-keys '((node-property . ("ROAM_REFS"))
                                                   (keyword . ("transclude")))
@@ -144,7 +102,7 @@ ROAM_REFS."
   :type '(alist))
 
 ;;; Variables
-(defconst org-roam-db-version 18)
+(defconst org-roam-db-version 20)
 
 (defvar org-roam-db--connection (make-hash-table :test #'equal)
   "Database connection to Org-roam database.")
@@ -155,36 +113,6 @@ ROAM_REFS."
   (gethash (expand-file-name (file-name-as-directory org-roam-directory))
            org-roam-db--connection))
 
-(declare-function emacsql-sqlite "ext:emacsql-sqlite")
-(declare-function emacsql-sqlite3 "ext:emacsql-sqlite3")
-(declare-function emacsql-libsqlite3 "ext:emacsql-libsqlite3")
-(declare-function emacsql-sqlite-builtin "ext:emacsql-sqlite-builtin")
-(declare-function emacsql-sqlite-module "ext:emacsql-sqlite-module")
-
-(defun org-roam-db--conn-fn ()
-  "Return the function for creating the database connection."
-  (cl-case org-roam-database-connector
-    (sqlite
-     (progn
-       (require 'emacsql-sqlite)
-       #'emacsql-sqlite))
-    (sqlite-builtin
-     (progn
-       (require 'emacsql-sqlite-builtin)
-       #'emacsql-sqlite-builtin))
-    (sqlite-module
-     (progn
-       (require 'emacsql-sqlite-module)
-       #'emacsql-sqlite-module))
-    (libsqlite3
-     (progn
-       (require 'emacsql-libsqlite3)
-       #'emacsql-libsqlite3))
-    (sqlite3
-     (progn
-       (require 'emacsql-sqlite3)
-       #'emacsql-sqlite3))))
-
 (defun org-roam-db ()
   "Entrypoint to the Org-roam sqlite database.
 Initializes and stores the database, and the database connection.
@@ -193,11 +121,7 @@ Performs a database upgrade when required."
                (emacsql-live-p (org-roam-db--get-connection)))
     (let ((init-db (not (file-exists-p org-roam-db-location))))
       (make-directory (file-name-directory org-roam-db-location) t)
-      (let ((conn (funcall (org-roam-db--conn-fn) org-roam-db-location)))
-        (emacsql conn [:pragma (= foreign_keys ON)])
-        (when-let* ((process (emacsql-process conn))
-                    (_ (processp process)))
-          (set-process-query-on-exit-flag process nil))
+      (let ((conn (emacsql-sqlite-open org-roam-db-location)))
         (puthash (expand-file-name (file-name-as-directory org-roam-directory))
                  conn
                  org-roam-db--connection)
@@ -209,7 +133,7 @@ Performs a database upgrade when required."
            ((> version org-roam-db-version)
             (emacsql-close conn)
             (user-error
-             "The Org-roam database was created with a newer Org-roam version.  "
+             "The Org-roam database was created with a newer Org-roam version.  %s"
              "You need to update the Org-roam package"))
            ((< version org-roam-db-version)
             (emacsql-close conn)
@@ -373,17 +297,20 @@ If HASH is non-nil, use that as the file's hash without recalculating it."
 
 (defun org-roam-db-get-scheduled-time ()
   "Return the scheduled time at point in ISO8601 format."
-  (when-let ((time (org-get-scheduled-time (point))))
-    (org-format-time-string "%FT%T%z" time)))
+  (when-let* ((time (org-get-scheduled-time (point))))
+    (format-time-string "%FT%T" time)))
 
 (defun org-roam-db-get-deadline-time ()
   "Return the deadline time at point in ISO8601 format."
-  (when-let ((time (org-get-deadline-time (point))))
-    (org-format-time-string "%FT%T%z" time)))
+  (when-let* ((time (org-get-deadline-time (point))))
+    (format-time-string "%FT%T" time)))
 
 (defun org-roam-db-node-p ()
   "Return t if headline at point is an Org-roam node, else return nil."
-  (and (org-id-get)
+  ;; In Org-mode 9.7 (Emacs 30.2), `org-id-get' throws an exception if it is
+  ;; called outside of an org-mode buffer.
+  (and (derived-mode-p 'org-mode)
+       (org-id-get)
        (not (org-entry-get (point) "ROAM_EXCLUDE"))
        (funcall org-roam-db-node-include-function)))
 
@@ -407,7 +334,7 @@ If HASH is non-nil, use that as the file's hash without recalculating it."
       (let* ((begin (match-beginning 0))
              (element (org-element-context))
              (type (org-element-type element))
-             link bounds)
+             link)
         (cond
          ;; Links correctly recognized by Org Mode
          ((eq type 'link)
@@ -438,7 +365,7 @@ INFO is the org-element parsed buffer."
   (org-with-point-at 1
     (when (and (= (org-outline-level) 0)
                (org-roam-db-node-p))
-      (when-let ((id (org-id-get)))
+      (when-let* ((id (org-id-get)))
         (let* ((file (buffer-file-name (buffer-base-buffer)))
                (title (org-roam-db--file-title))
                (pos (point))
@@ -471,7 +398,7 @@ INFO is the org-element parsed buffer."
 
 (cl-defun org-roam-db-insert-node-data ()
   "Insert node data for headline at point into the Org-roam cache."
-  (when-let ((id (org-id-get)))
+  (when-let* ((id (org-id-get)))
     (let* ((file (buffer-file-name (buffer-base-buffer)))
            (heading-components (org-heading-components))
            (pos (point))
@@ -512,8 +439,8 @@ INFO is the org-element parsed buffer."
 
 (defun org-roam-db-insert-tags ()
   "Insert tags for node at point into Org-roam cache."
-  (when-let ((node-id (org-id-get))
-             (tags (org-get-tags)))
+  (when-let* ((node-id (org-id-get))
+              (tags (org-get-tags)))
     (org-roam-db-query [:insert :into tags
                         :values $v1]
                        (mapcar (lambda (tag)
@@ -570,12 +497,18 @@ INFO is the org-element parsed buffer."
   "Insert link data for LINK at current point into the Org-roam cache."
   (save-excursion
     (goto-char (org-element-property :begin link))
-    (let ((type (org-element-property :type link))
-          (path (org-element-property :path link))
-          (source (org-roam-id-at-point))
-          (properties (list :outline (ignore-errors
-                                       ;; This can error if link is not under any headline
-                                       (org-get-outline-path 'with-self 'use-cache)))))
+    (let* ((type (org-element-property :type link))
+           (path (org-element-property :path link))
+           (option (and (string-match "::\\(.*\\)\\'" path)
+                        (match-string 1 path)))
+           (path (if (not option) path
+                   (substring path 0 (match-beginning 0))))
+           (source (org-roam-id-at-point))
+           (properties (list :outline (ignore-errors
+                                        ;; This can error if link is not under any headline
+                                        (org-get-outline-path 'with-self 'use-cache))))
+           (properties (if option (plist-put properties :search-option option)
+                         properties)))
       ;; For Org-ref links, we need to split the path into the cite keys
       (when (and source path)
         (if (and (boundp 'org-ref-cite-types)
@@ -623,12 +556,10 @@ INFO is the org-element parsed buffer."
     (secure-hash 'sha1 (current-buffer))))
 
 ;;;; Synchronization
-(defun org-roam-db-update-file (&optional file-path no-require)
+(defun org-roam-db-update-file (&optional file-path _deprecated-arg)
   "Update Org-roam cache for FILE-PATH.
 
-If the file does not exist anymore, remove it from the cache.
-
-If the file exists, update the cache with information.
+Assumes FILE-PATH exists. See also `org-roam-db-clear-file'.
 
 If NO-REQUIRE, don't require optional libraries. Set NO-REQUIRE
 when the libraries are already required at some toplevel, e.g.
@@ -639,13 +570,13 @@ in `org-roam-db-sync'."
                                            :where (= file $s1)] file-path)))
         info)
     (unless (string= content-hash db-hash)
-      (unless no-require
-        (org-roam-require '(org-ref oc)))
+      (require 'org-ref nil t)
       (org-roam-with-file file-path nil
         (emacsql-with-transaction (org-roam-db)
           (org-with-wide-buffer
            (org-set-regexps-and-options 'tags-only)
-           (org-refresh-category-properties)
+           ;; Org doesn't use this anymore, so we probably should stop too.
+           ;; (org-refresh-category-properties)
            (org-roam-db-clear-file)
            (org-roam-db-insert-file content-hash)
            (org-roam-db-insert-file-node)
@@ -659,8 +590,7 @@ in `org-roam-db-sync'."
            (setq info (org-element-parse-buffer))
            (org-roam-db-map-links
             (list #'org-roam-db-insert-link))
-           (when (fboundp 'org-cite-insert)
-             (require 'oc)             ;ensure feature is loaded
+           (when (require 'oc nil t)
              (org-roam-db-map-citations
               info
               (list #'org-roam-db-insert-citation)))))))))
@@ -673,7 +603,8 @@ If FORCE, force a rebuild of the cache from scratch."
   (org-roam-db--close) ;; Force a reconnect
   (when force (delete-file org-roam-db-location))
   (org-roam-db) ;; To initialize the database, no-op if already initialized
-  (org-roam-require '(org-ref oc))
+  (require 'org-ref nil t)
+  (require 'oc nil t)
   (let* ((gc-cons-threshold org-roam-db-gc-threshold)
          (org-agenda-files nil)
          (org-roam-files (org-roam-list-files))
@@ -686,13 +617,13 @@ If FORCE, force a rebuild of the cache from scratch."
           (push file modified-files)))
       (remhash file current-files))
     (emacsql-with-transaction (org-roam-db)
-      (org-roam-dolist-with-progress (file (hash-table-keys current-files))
+      (dolist-with-progress-reporter (file (hash-table-keys current-files))
           "Clearing removed files..."
         (org-roam-db-clear-file file))
-      (org-roam-dolist-with-progress (file modified-files)
+      (dolist-with-progress-reporter (file modified-files)
           "Processing modified files..."
         (condition-case err
-            (org-roam-db-update-file file 'no-require)
+            (org-roam-db-update-file file)
           (error
            (org-roam-db-clear-file file)
            (lwarn 'org-roam :error "Failed to process %s with error %s, skipping..."
@@ -718,30 +649,19 @@ database, see `org-roam-db-sync' command."
       (add-hook 'kill-emacs-hook #'org-roam-db--close-all)
       (advice-add #'rename-file :after  #'org-roam-db-autosync--rename-file-a)
       (advice-add #'delete-file :before #'org-roam-db-autosync--delete-file-a)
+      (advice-add #'vc-delete-file :around #'org-roam-db-autosync--vc-delete-file-a)
       (org-roam-db-sync))
      (t
       (remove-hook 'find-file-hook  #'org-roam-db-autosync--setup-file-h)
       (remove-hook 'kill-emacs-hook #'org-roam-db--close-all)
       (advice-remove #'rename-file #'org-roam-db-autosync--rename-file-a)
       (advice-remove #'delete-file #'org-roam-db-autosync--delete-file-a)
+      (advice-remove #'vc-delete-file #'org-roam-db-autosync--vc-delete-file-a)
       (org-roam-db--close-all)
       ;; Disable local hooks for all org-roam buffers
-      (dolist (buf (org-roam-buffer-list))
+      (dolist (buf (seq-filter #'org-roam-buffer-p (buffer-list)))
         (with-current-buffer buf
           (remove-hook 'after-save-hook #'org-roam-db-autosync--try-update-on-save-h t)))))))
-
-;;;###autoload
-(defun org-roam-db-autosync-enable ()
-  "Activate `org-roam-db-autosync-mode'."
-  (org-roam-db-autosync-mode +1))
-
-(defun org-roam-db-autosync-disable ()
-  "Deactivate `org-roam-db-autosync-mode'."
-  (org-roam-db-autosync-mode -1))
-
-(defun org-roam-db-autosync-toggle ()
-  "Toggle `org-roam-db-autosync-mode' enabled/disabled."
-  (org-roam-db-autosync-mode 'toggle))
 
 (defun org-roam-db-autosync--delete-file-a (file &optional _trash)
   "Maintain cache consistency when file deletes.
@@ -750,6 +670,17 @@ FILE is removed from the database."
              (not (backup-file-name-p file))
              (org-roam-file-p file))
     (org-roam-db-clear-file (expand-file-name file))))
+
+(defun org-roam-db-autosync--vc-delete-file-a (fun file)
+  "Maintain cache consistency on file deletion by FUN.
+FILE is removed from the database."
+  (let ((org-roam-file-p (and (not (auto-save-file-name-p file))
+                              (not (backup-file-name-p file))
+                              (org-roam-file-p file))))
+    (apply fun `(,file))
+    (when (and org-roam-file-p
+               (not (file-exists-p file)))
+      (org-roam-db-clear-file (expand-file-name file)))))
 
 (defun org-roam-db-autosync--rename-file-a (old-file new-file-or-dir &rest _args)
   "Maintain cache consistency of file rename.
@@ -786,6 +717,14 @@ OLD-FILE is cleared from the database, and NEW-FILE-OR-DIR is added."
   "Print information about node at point."
   (interactive)
   (prin1 (org-roam-node-at-point)))
+
+(defun org-roam-db-explore ()
+  "Explore the org-roam DB contents."
+  (interactive)
+  (require 'sqlite-mode nil t)
+  (if (fboundp 'sqlite-mode-open-file)
+      (sqlite-mode-open-file org-roam-db-location)
+    (message "org-roam-db-explore: This command requires Emacs 29")))
 
 (provide 'org-roam-db)
 
